@@ -37,22 +37,14 @@ jobs:
               let file = "android/build.gradle";
               let content = fs.readFileSync(file, "utf8");
               
-              // Asegurar kotlinVersion
               if (content.includes("kotlinVersion =")) {
                 content = content.replace(/kotlinVersion\s*=\s*["\x27].*?["\x27]/g, "kotlinVersion = \"1.9.25\"");
               } else {
                 content = content.replace("buildscript {", "buildscript {\n    ext.kotlinVersion = \"1.9.25\";");
               }
 
-              // Agregar subprojects para forzar jvmTarget 17 en kotlin
               if (!content.includes("kotlinOptions")) {
-                content += `\nallprojects {
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-        kotlinOptions {
-            jvmTarget = "17"
-        }
-    }
-}\n`;
+                content += "\nallprojects {\n    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {\n        kotlinOptions {\n            jvmTarget = \"17\"\n        }\n    }\n}\n";
               }
 
               fs.writeFileSync(file, content);
