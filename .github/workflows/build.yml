@@ -47,6 +47,14 @@ jobs:
       - name: Generar Estructura Nativa (Expo Prebuild)
         run: npx expo prebuild --platform android
 
+      - name: Desactivar Nueva Arquitectura (Evitar errores C++)
+        run: |
+          if [ -f "android/gradle.properties" ]; then
+            sed -i 's/newArchEnabled=true/newArchEnabled=false/g' android/gradle.properties || echo "newArchEnabled=false" >> android/gradle.properties
+          else
+            echo "newArchEnabled=false" >> android/gradle.properties
+          fi
+
       - name: Empaquetar Bundle de JavaScript Offline
         run: |
           mkdir -p android/app/src/main/assets
