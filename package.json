@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
-    "expo": "~57.0.15",
-    "expo-router": "~57.0.15",
-    "expo-status-bar": "~57.0.1",
-    "expo-updates": "~57.0.17",
-    "react": "19.2.3",
-    "react-native": "0.86.2",
+    "expo": "~52.0.0",
+    "expo-router": "~52.0.0",
+    "expo-status-bar": "~52.0.0",
+    "expo-updates": "~52.0.0",
+    "react": "18.3.1",
+    "react-native": "0.76.0",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0"
   },
@@ -20,7 +20,7 @@
   },
   "private": true,
   "devDependencies": {
-    "@types/react": "^19.2.18",
-    "typescript": "^7.0.2"
+    "@types/react": "^18.3.0",
+    "typescript": "^5.0.0"
   }
 }
