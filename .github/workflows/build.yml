@@ -82,11 +82,23 @@ jobs:
       - name: Generar Estructura Nativa (Expo Prebuild)
         run: npx expo prebuild --platform android
 
-      - name: Forzar Gradle 8.8 (Compatible con Expo SDK 52)
+      - name: Forzar Gradle 8.7 y repositorios de Expo
         run: |
           if [ -f "android/gradle/wrapper/gradle-wrapper.properties" ]; then
-            sed -i 's/gradle-.*-bin.zip/gradle-8.8-bin.zip/g' android/gradle/wrapper/gradle-wrapper.properties
+            sed -i 's/gradle-.*-bin.zip/gradle-8.7-bin.zip/g' android/gradle/wrapper/gradle-wrapper.properties
           fi
+          node -e '
+            const fs = require("fs");
+            let file = "android/settings.gradle";
+            if (fs.existsSync(file)) {
+              let content = fs.readFileSync(file, "utf8");
+              const repoLine = "maven { url(\x27$rootDir/../node_modules/expo-modules-core/android\x27) }";
+              if (!content.includes("expo-modules-core/android")) {
+                content = content.replace("repositories {", "repositories {\n        " + repoLine);
+                fs.writeFileSync(file, content);
+              }
+            }
+          '
 
       - name: Desactivar Nueva Arquitectura (Evitar errores C++)
         run: |
