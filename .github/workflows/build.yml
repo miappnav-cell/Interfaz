@@ -17,6 +17,20 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Corregir version de expo-router en package.json
+        run: |
+          node -e '
+            const fs = require("fs");
+            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            if (pkg.dependencies && pkg.dependencies["expo-router"]) {
+              pkg.dependencies["expo-router"] = "~4.0.0";
+            }
+            if (pkg.devDependencies && pkg.devDependencies["expo-router"]) {
+              pkg.devDependencies["expo-router"] = "~4.0.0";
+            }
+            fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+          '
+
       - name: Instalar Dependencias
         run: npm install --legacy-peer-deps
 
