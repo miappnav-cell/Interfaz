@@ -1,24 +1,22 @@
 {
   "expo": {
-    "name": "Interfaz",
-    "slug": "Interfaz",
+    "name": "King System",
+    "slug": "king-system",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "ios": {
-      "supportsTablet": true
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#05050f"
     },
     "android": {
+      "package": "com.kingsystem.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#05050f"
       }
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     }
   }
 }

@@ -4,9 +4,13 @@
   "main": "index.js",
   "dependencies": {
     "expo": "~57.0.15",
+    "expo-router": "~57.0.15",
     "expo-status-bar": "~57.0.1",
+    "expo-updates": "~57.0.17",
     "react": "19.2.3",
-    "react-native": "0.86.2"
+    "react-native": "0.86.2",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0"
   },
   "scripts": {
     "start": "expo start",
@@ -14,5 +18,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "typescript": "^7.0.2"
+  }
 }
