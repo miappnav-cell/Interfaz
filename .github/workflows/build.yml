@@ -26,13 +26,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Crear assets temporales necesarios para Expo
-        run: |
-          mkdir -p assets
-          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' | base64 -d > assets/icon.png
-          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' | base64 -d > assets/adaptive-icon.png
-          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' | base64 -d > assets/splash.png
-
       - name: Generar Estructura Nativa (Expo Prebuild)
         run: npx expo prebuild --platform android --clean
 
