@@ -29,18 +29,32 @@ jobs:
       - name: Generar Estructura Nativa (Expo Prebuild)
         run: npx expo prebuild --platform android --clean
 
-      - name: Forzar Kotlin 1.9.25 para compatibilidad con Compose
+      - name: Configurar Kotlin y JVM Target en Gradle
         run: |
           if [ -f "android/build.gradle" ]; then
             node -e '
               const fs = require("fs");
               let file = "android/build.gradle";
               let content = fs.readFileSync(file, "utf8");
+              
+              // Asegurar kotlinVersion
               if (content.includes("kotlinVersion =")) {
                 content = content.replace(/kotlinVersion\s*=\s*["\x27].*?["\x27]/g, "kotlinVersion = \"1.9.25\"");
               } else {
                 content = content.replace("buildscript {", "buildscript {\n    ext.kotlinVersion = \"1.9.25\";");
               }
+
+              // Agregar subprojects para forzar jvmTarget 17 en kotlin
+              if (!content.includes("kotlinOptions")) {
+                content += `\nallprojects {
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = "17"
+        }
+    }
+}\n`;
+              }
+
               fs.writeFileSync(file, content);
             '
           fi
@@ -54,9 +68,9 @@ jobs:
         run: |
           cd android && chmod +x gradlew
 
-      - name: Compilar APK King System (Debug)
+      - name: Compilar APK King System (Con modo Info para diagnóstico)
         run: |
-          cd android && ./gradlew assembleDebug
+          cd android && ./gradlew assembleDebug --info
 
       - name: Guardar APK como Artifact
         uses: actions/upload-artifact@v4
