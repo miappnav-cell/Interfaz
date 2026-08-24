@@ -17,51 +17,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Limpiar builds anteriores
-        run: |
-          rm -rf android node_modules package-lock.json
-
-      - name: Corregir versiones incompatibles en package.json
-        run: |
-          node -e '
-            const fs = require("fs");
-            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
-            
-            const fixes = {
-              "expo": "~52.0.0",
-              "expo-router": "~4.0.0",
-              "expo-status-bar": "~2.0.0",
-              "expo-constants": "~17.0.0",
-              "expo-linking": "~7.0.0",
-              "expo-splash-screen": "~0.29.0",
-              "expo-file-system": "~18.0.0",
-              "expo-secure-store": "~14.0.0",
-              "expo-av": "~15.0.0",
-              "expo-image": "~2.0.0",
-              "expo-updates": "~0.26.0",
-              "react": "18.3.1",
-              "react-native": "0.76.0",
-              "react-native-screens": "~4.0.0"
-            };
-
-            ["dependencies", "devDependencies"].forEach(depType => {
-              if (pkg[depType]) {
-                for (let dep in fixes) {
-                  if (pkg[depType][dep]) {
-                    pkg[depType][dep] = fixes[dep];
-                  }
-                }
-              }
-            });
-
-            fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-          '
-
       - name: Instalar Dependencias
         run: npm install --legacy-peer-deps
-
-      - name: Instalar CLI de React Native
-        run: npm install --save-dev @react-native-community/cli
 
       - name: Configurar Java JDK
         uses: actions/setup-java@v4
@@ -69,57 +26,13 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Crear assets temporales
-        run: |
-          mkdir -p assets
-          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' | base64 -d > assets/icon.png
-          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' | base64 -d > assets/adaptive-icon.png
-          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' | base64 -d > assets/splash.png
-
-      - name: Crear metro.config.js
-        run: |
-          cat << 'CONFIG' > metro.config.js
-          const { getDefaultConfig } = require('expo/metro-config');
-          const config = getDefaultConfig(__dirname);
-          module.exports = config;
-          CONFIG
-
       - name: Generar Estructura Nativa (Expo Prebuild)
         run: npx expo prebuild --platform android --clean
-
-      - name: Inyectar Kotlin 1.9.25 (Correccion)
-        run: |
-          node -e '
-            const fs = require("fs");
-            let file = "android/build.gradle";
-            let c = fs.readFileSync(file, "utf8");
-            c = c.replace("buildscript {", "buildscript {\n    ext {\n        kotlinVersion = \"1.9.25\"\n    }");
-            fs.writeFileSync(file, c);
-          '
-
-      - name: Configurar Gradle y Repositorios
-        run: |
-          if [ -f "android/gradle/wrapper/gradle-wrapper.properties" ]; then
-            sed -i 's|gradle-.*-bin.zip|gradle-8.7-bin.zip|g' android/gradle/wrapper/gradle-wrapper.properties
-          fi
-          
-          if [ -f "android/settings.gradle" ]; then
-            sed -i '/pluginManagement {/a\    repositories {\n        google()\n        mavenCentral()\n        gradlePluginPortal()\n    }' android/settings.gradle || true
-          fi
-
-      - name: Desactivar Nueva Arquitectura
-        run: |
-          if [ -f "android/gradle.properties" ]; then
-            sed -i 's/newArchEnabled=true/newArchEnabled=false/g' android/gradle.properties || true
-          fi
-          echo "newArchEnabled=false" >> android/gradle.properties
-          echo "org.gradle.jvmargs=-Xmx4096m" >> android/gradle.properties
-          echo "org.gradle.daemon=true" >> android/gradle.properties
 
       - name: Empaquetar Bundle de JavaScript Offline
         run: |
           mkdir -p android/app/src/main/assets
-          npx react-native bundle --platform android --dev false --entry-file node_modules/expo/AppEntry.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
+          npx react-native bundle --platform android --dev false --entry-file node_modules/expo/AppEntry.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/
 
       - name: Dar permisos a Gradle
         run: |
@@ -127,7 +40,7 @@ jobs:
 
       - name: Compilar APK King System (Debug)
         run: |
-          cd android && ./gradlew clean assembleDebug --no-daemon --stacktrace
+          cd android && ./gradlew assembleDebug
 
       - name: Guardar APK como Artifact
         uses: actions/upload-artifact@v4

@@ -1,26 +1,27 @@
 {
   "name": "interfaz",
   "version": "1.0.0",
-  "main": "index.js",
-  "dependencies": {
-    "expo": "~52.0.0",
-    "expo-router": "~52.0.0",
-    "expo-status-bar": "~52.0.0",
-    "expo-updates": "~52.0.0",
-    "react": "18.3.1",
-    "react-native": "0.76.0",
-    "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "~4.26.0"
-  },
+  "main": "expo-router/entry",
   "scripts": {
-    "start": "node server.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
-  "private": true,
+  "dependencies": {
+    "expo": "~52.0.0",
+    "expo-router": "~4.0.0",
+    "expo-status-bar": "~2.0.0",
+    "expo-updates": "~0.26.9",
+    "react": "18.3.1",
+    "react-native": "0.76.5",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.4.0"
+  },
   "devDependencies": {
-    "@types/react": "^18.3.0",
-    "typescript": "^5.0.0"
-  }
+    "@babel/core": "^7.25.2",
+    "@types/react": "~18.3.12",
+    "typescript": "^5.3.3"
+  },
+  "private": true
 }
