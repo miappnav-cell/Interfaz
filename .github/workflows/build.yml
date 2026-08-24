@@ -15,7 +15,7 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '20'
 
       - name: Instalar Dependencias
         run: npm install --legacy-peer-deps
@@ -27,7 +27,7 @@ jobs:
           java-version: '17'
 
       - name: Generar Estructura Nativa (Expo Prebuild)
-        run: npx expo prebuild --platform android --no-interactive
+        run: npx expo prebuild --platform android
 
       - name: Dar permisos a Gradle
         run: |
