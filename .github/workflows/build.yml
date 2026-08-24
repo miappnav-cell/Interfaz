@@ -87,6 +87,16 @@ jobs:
       - name: Generar Estructura Nativa (Expo Prebuild)
         run: npx expo prebuild --platform android --clean
 
+      - name: Inyectar Kotlin 1.9.25 (Correccion)
+        run: |
+          node -e '
+            const fs = require("fs");
+            let file = "android/build.gradle";
+            let c = fs.readFileSync(file, "utf8");
+            c = c.replace("buildscript {", "buildscript {\n    ext {\n        kotlinVersion = \"1.9.25\"\n    }");
+            fs.writeFileSync(file, c);
+          '
+
       - name: Configurar Gradle y Repositorios
         run: |
           if [ -f "android/gradle/wrapper/gradle-wrapper.properties" ]; then
