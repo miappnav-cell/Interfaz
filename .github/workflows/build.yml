@@ -20,6 +20,9 @@ jobs:
       - name: Instalar Dependencias
         run: npm install --legacy-peer-deps
 
+      - name: Instalar CLI de React Native
+        run: npm install --save-dev @react-native-community/cli
+
       - name: Configurar Java JDK
         uses: actions/setup-java@v4
         with:
