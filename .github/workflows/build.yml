@@ -36,6 +36,14 @@ jobs:
           echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' | base64 -d > assets/adaptive-icon.png
           echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' | base64 -d > assets/splash.png
 
+      - name: Crear metro.config.js
+        run: |
+          cat << 'CONFIG' > metro.config.js
+          const { getDefaultConfig } = require('expo/metro-config');
+          const config = getDefaultConfig(__dirname);
+          module.exports = config;
+          CONFIG
+
       - name: Generar Estructura Nativa (Expo Prebuild)
         run: npx expo prebuild --platform android
 
