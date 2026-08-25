@@ -1,40 +1,37 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import * as Updates from 'expo-updates';
+import UpdateStatusCard from './components/UpdateStatusCard';
 
 export default function UpdatesScreen() {
   const [loading, setLoading] = useState(false);
-  const [statusText, setStatusText] = useState('La aplicación está lista para buscar actualizaciones.');
+  const [statusText, setStatusText] = useState('Sistema listo para comprobar parches en caliente.');
+  const [progress, setProgress] = useState(0);
 
   const handleCheckUpdate = async () => {
     try {
       setLoading(true);
-      setStatusText('Buscando actualizaciones en el servidor...');
-
+      setStatusText('Conectando con el canal de compilación OTA...');
+      
       if (!Updates.isEnabled) {
-        setStatusText('La función OTA requiere un APK compilado con el projectId configurado.');
+        setStatusText('La función OTA requiere el build compilado con el projectId de Expo.');
         setLoading(false);
         return;
       }
 
       const update = await Updates.checkForUpdateAsync();
-
       if (update.isAvailable) {
-        setStatusText('Descargando parche de actualización...');
+        setStatusText('Descargando nueva versión en segundo plano...');
+        setProgress(50);
         await Updates.fetchUpdateAsync();
-        setStatusText('¡Actualización descargada!');
-        
-        Alert.alert(
-          'Actualización Lista',
-          'La nueva versión ha sido descargada. Se reiniciará la app para aplicar los cambios.',
-          [{ text: 'Reiniciar ahora', onPress: () => Updates.reloadAsync() }]
-        );
+        setProgress(100);
+        setStatusText('Parche aplicado. Reiniciando la app en 2 segundos...');
+        setTimeout(() => Updates.reloadAsync(), 2000);
       } else {
-        setStatusText('Tu aplicación ya está en la última versión disponible.');
+        setStatusText('El sistema ya cuenta con el paquete ejecutable más reciente.');
       }
     } catch (error) {
-      console.log('Error buscando actualización:', error);
-      setStatusText(`Error al verificar: ${error.message}`);
+      setStatusText(`Estado: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -42,24 +39,18 @@ export default function UpdatesScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Actualizaciones en Vivo (OTA)</Text>
-      <Text style={styles.status}>{statusText}</Text>
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#00e676" style={{ marginVertical: 20 }} />
-      ) : (
-        <TouchableOpacity style={styles.button} onPress={handleCheckUpdate}>
-          <Text style={styles.buttonText}>Buscar y Aplicar Cambios</Text>
-        </TouchableOpacity>
-      )}
+      <Text style={styles.headerTitle}>ACTUALIZACIONES EN VIVO (OTA)</Text>
+      <UpdateStatusCard statusText={statusText} isDownloading={loading} progress={progress} />
+      <TouchableOpacity style={styles.btn} onPress={handleCheckUpdate} disabled={loading}>
+        <Text style={styles.btnText}>{loading ? 'BUSCANDO...' : 'BUSCAR Y APLICAR CAMBIOS'}</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000', padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#fff', marginBottom: 15 },
-  status: { fontSize: 14, color: '#aaa', textAlign: 'center', marginBottom: 30, paddingHorizontal: 10 },
-  button: { backgroundColor: '#00e676', paddingVertical: 14, paddingHorizontal: 24, borderRadius: 8 },
-  buttonText: { color: '#000', fontSize: 16, fontWeight: 'bold' }
+  container: { flex: 1, backgroundColor: '#090a0f', padding: 18 },
+  headerTitle: { color: '#fff', fontSize: 20, fontWeight: '900', letterSpacing: 1.5, marginBottom: 20 },
+  btn: { backgroundColor: '#00e676', padding: 16, borderRadius: 8, alignItems: 'center' },
+  btnText: { color: '#000', fontWeight: 'bold', fontSize: 13, letterSpacing: 1 }
 });

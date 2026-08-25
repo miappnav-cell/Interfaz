@@ -1,57 +1,37 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, StyleSheet, Switch } from 'react-native';
+import ThemeSelector from './components/ThemeSelector';
 
 export default function SettingsScreen() {
-  const [theme, setTheme] = useState('Oscuro');
-  const [fontSize, setFontSize] = useState('Mediana');
+  const [theme, setTheme] = useState('Oled');
   const [animations, setAnimations] = useState(true);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Configuración del Sistema</Text>
-
-      <Text style={styles.sectionTitle}>Tema de la Interfaz</Text>
-      <View style={styles.row}>
-        {['Oscuro', 'Claro', 'Oled'].map((item) => (
-          <TouchableOpacity 
-            key={item} 
-            style={[styles.chip, theme === item && styles.activeChip]} 
-            onPress={() => setTheme(item)}
-          >
-            <Text style={styles.chipText}>{item}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <Text style={styles.sectionTitle}>Escala de Fuente</Text>
-      <View style={styles.row}>
-        {['Pequeña', 'Mediana', 'Grande'].map((size) => (
-          <TouchableOpacity 
-            key={size} 
-            style={[styles.chip, fontSize === size && styles.activeChip]} 
-            onPress={() => setFontSize(size)}
-          >
-            <Text style={styles.chipText}>{size}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <View style={styles.switchRow}>
-        <Text style={styles.switchLabel}>Efectos y Animaciones Visuales</Text>
-        <Switch value={animations} onValueChange={setAnimations} trackColor={{ true: '#00e676' }} />
+      <Text style={styles.headerTitle}>CONFIGURACIÓN DEL SISTEMA</Text>
+      <ThemeSelector activeTheme={theme} onSelectTheme={setTheme} />
+      
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Text style={styles.settingText}>Efectos y Animaciones Visuales</Text>
+          <Switch 
+            value={animations} 
+            onValueChange={setAnimations}
+            trackColor={{ false: '#333', true: '#1b5e20' }}
+            thumbColor={animations ? '#00e676' : '#777'}
+          />
+        </View>
+        <Text style={styles.infoText}>Estado actual: {animations ? 'Rendimiento Alto' : 'Ahorro de Batería'}</Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000', padding: 20 },
-  header: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginBottom: 20 },
-  sectionTitle: { color: '#aaa', fontSize: 14, marginTop: 15, marginBottom: 10 },
-  row: { flexDirection: 'row', gap: 10 },
-  chip: { paddingVertical: 8, paddingHorizontal: 16, backgroundColor: '#1a1a1a', borderRadius: 20, borderWidth: 1, borderColor: '#333' },
-  activeChip: { backgroundColor: '#00e676', borderColor: '#00e676' },
-  chipText: { color: '#fff', fontWeight: 'bold' },
-  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 30, paddingVertical: 10 },
-  switchLabel: { color: '#fff', fontSize: 15 }
+  container: { flex: 1, backgroundColor: '#090a0f', padding: 18 },
+  headerTitle: { color: '#fff', fontSize: 20, fontWeight: '900', letterSpacing: 1.5, marginBottom: 20 },
+  card: { backgroundColor: '#121622', padding: 16, borderRadius: 10, borderWidth: 1, borderColor: '#1c2333' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  settingText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  infoText: { color: '#6b7a99', fontSize: 11, marginTop: 8 }
 });
