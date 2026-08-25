@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Instalar Dependencias
+      - name: Instalar Dependencias (Sin interrupciones de red)
         run: npm install --legacy-peer-deps
 
       - name: Configurar Java JDK 17
@@ -44,15 +44,6 @@ jobs:
               fs.writeFileSync(file, content);
             '
           fi
-
-      - name: Empaquetar Bundle de JavaScript Offline
-        run: |
-          mkdir -p android/app/src/main/assets
-          npx react-native bundle --platform android --dev false --entry-file node_modules/expo/AppEntry.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/
-
-      - name: Dar permisos a Gradle
-        run: |
-          cd android && chmod +x gradlew
 
       - name: Compilar APK Definitivo (Debug)
         run: |
