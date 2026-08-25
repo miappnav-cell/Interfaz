@@ -12,13 +12,13 @@ export default function UsersScreen() {
   const [msgInput, setMsgInput] = useState({});
 
   useEffect(() => {
-    // 1. Cargar datos iniciales del backend / PostgreSQL
+    // 1. Cargar lista inicial de licencias
     apiService.getUsers().then(data => setUsers(data));
 
-    // 2. Conectar WebSockets para recepción de mensajes en vivo en tarjetas
+    // 2. Conectar recepción de mensajes del bot en vivo
     const socket = new RealtimeSocket((incomingMsg) => {
       setUsers(prev => prev.map(u => {
-        if (u.id === incomingMsg.userId) {
+        if (u.telegram_id === incomingMsg.telegram_id) {
           return {
             ...u,
             messages: [...u.messages, { sender: incomingMsg.sender, text: incomingMsg.text }]
@@ -32,17 +32,30 @@ export default function UsersScreen() {
     return () => socket.disconnect();
   }, []);
 
-  const handleStatusChange = (id, status) => {
-    apiService.updateUserStatus(id, status);
-    setUsers(prev => prev.map(u => u.id === id ? { ...u, status } : u));
+  // Activar / Bloquear Licencia
+  const handleStatusChange = (id, newStatus) => {
+    const user = users.find(u => u.id === id);
+    if (!user) return;
+    
+    apiService.updateLicense(user.telegram_id, newStatus, 0);
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, status: newStatus } : u));
   };
 
+  // Agregar +30 Días de Licencia
   const handleAddDays = (id) => {
+    const user = users.find(u => u.id === id);
+    if (!user) return;
+
+    apiService.updateLicense(user.telegram_id, 'ACTIVE', 30);
     setUsers(prev => prev.map(u => {
       if (u.id === id) {
-        const d = new Date(u.service_expiration);
-        d.setDate(d.getDate() + 30);
-        return { ...u, service_expiration: d.toISOString().split('T')[0] };
+        const baseDate = u.license_expiration !== 'PENDIENTE' ? new Date(u.license_expiration) : new Date();
+        baseDate.setDate(baseDate.getDate() + 30);
+        return { 
+          ...u, 
+          status: 'ACTIVE',
+          license_expiration: baseDate.toISOString().split('T')[0] 
+        };
       }
       return u;
     }));
@@ -52,14 +65,17 @@ export default function UsersScreen() {
     setUsers(prev => prev.map(u => u.id === id ? { ...u, showInbox: !u.showInbox } : u));
   };
 
+  // Enviar Mensaje al Chat de Telegram del Usuario
   const handleSendMessage = (id) => {
     const text = msgInput[id];
-    if (!text || !text.trim()) return;
+    const user = users.find(u => u.id === id);
+    if (!text || !text.trim() || !user) return;
+
+    apiService.sendMessageToTelegram(user.telegram_id, text);
     setUsers(prev => prev.map(u => u.id === id ? { ...u, messages: [...u.messages, { sender: 'ADMIN', text }] } : u));
     setMsgInput({ ...msgInput, [id]: '' });
   };
 
-  // Filtrado por buscador y etiquetas en tiempo real
   const filteredUsers = users.filter(u => {
     const matchesSearch = u.username.toLowerCase().includes(searchText.toLowerCase()) || u.telegram_id.includes(searchText);
     const matchesFilter = activeFilter === 'TODOS' || u.status === activeFilter;
@@ -68,7 +84,7 @@ export default function UsersScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerTitle}>GESTIÓN DE USUARIOS & WEBSOCKET</Text>
+      <Text style={styles.headerTitle}>ACTIVACIÓN DE LICENCIAS & CHAT BOT</Text>
       
       <UserFilterBar 
         searchText={searchText}
@@ -97,5 +113,5 @@ export default function UsersScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#090a0f', padding: 18 },
-  headerTitle: { color: '#fff', fontSize: 20, fontWeight: '900', letterSpacing: 1.5, marginBottom: 15 }
+  headerTitle: { color: '#fff', fontSize: 18, fontWeight: '900', letterSpacing: 1.5, marginBottom: 15 }
 });

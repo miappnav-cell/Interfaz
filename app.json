@@ -1,35 +1,41 @@
 {
   "expo": {
-    "name": "King System",
-    "slug": "kingsystem",
+    "name": "Interfaz",
+    "slug": "interfaz",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#090a0f"
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
+    "ios": {
+      "supportsTablet": true
     },
     "android": {
-      "package": "com.kingsystem.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#000000"
-      }
+        "backgroundColor": "#090a0f"
+      },
+      "package": "com.kingsystem.interfaz"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-updates"
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#00e676"
+        }
+      ]
     ],
     "extra": {
       "eas": {
-        "projectId": "d205faa2-e822-4ca6-88eb-7dac9b128cf4"
+        "projectId": "6949d95a-7363-48fb-8646-e71fa5d1bf0b"
       }
     },
     "owner": "kingsystem"
