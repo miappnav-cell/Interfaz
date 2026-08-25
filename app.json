@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "King System",
-    "slug": "king-system",
+    "slug": "interfaz",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -9,14 +9,21 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#05050f"
+      "backgroundColor": "#000000"
+    },
+    "ios": {
+      "supportsTablet": true
     },
     "android": {
-      "package": "com.kingsystem.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#05050f"
-      }
-    }
+        "backgroundColor": "#000000"
+      },
+      "package": "com.kingsystem.interfaz"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "interfaz"
   }
 }
