@@ -57,7 +57,12 @@ jobs:
       - name: Generar Estructura Nativa (Expo Prebuild)
         run: npx expo prebuild --platform android --clean
 
-      - name: Compilar APK Definitivo (Debug)
+      - name: Empaquetar Bundle de JavaScript Offline
+        run: |
+          mkdir -p android/app/src/main/assets
+          npx react-native bundle --platform android --dev false --entry-file node_modules/expo/AppEntry.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/
+
+      - name: Compilar APK Definitivo (Debug con Bundle Integrado)
         run: |
           cd android && ./gradlew assembleDebug
 
