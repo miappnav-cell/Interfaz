@@ -4,13 +4,19 @@ import * as Updates from 'expo-updates';
 
 export default function UpdatesScreen() {
   const [loading, setLoading] = useState(false);
-  const [statusText, setStatusText] = useState('La aplicación está en la última versión.');
+  const [statusText, setStatusText] = useState('La aplicación está lista para buscar actualizaciones.');
 
   const handleCheckUpdate = async () => {
     try {
       setLoading(true);
       setStatusText('Buscando actualizaciones en el servidor...');
-      
+
+      if (!Updates.isEnabled) {
+        setStatusText('La función OTA requiere un APK compilado con el projectId configurado.');
+        setLoading(false);
+        return;
+      }
+
       const update = await Updates.checkForUpdateAsync();
 
       if (update.isAvailable) {
@@ -24,11 +30,11 @@ export default function UpdatesScreen() {
           [{ text: 'Reiniciar ahora', onPress: () => Updates.reloadAsync() }]
         );
       } else {
-        setStatusText('No hay parches nuevos. Tu app está actualizada.');
+        setStatusText('Tu aplicación ya está en la última versión disponible.');
       }
     } catch (error) {
       console.log('Error buscando actualización:', error);
-      setStatusText('No se pudo verificar (requiere compilación con expo-updates habilitado).');
+      setStatusText(`Error al verificar: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -40,7 +46,7 @@ export default function UpdatesScreen() {
       <Text style={styles.status}>{statusText}</Text>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#007AFF" style={{ marginVertical: 20 }} />
+        <ActivityIndicator size="large" color="#00e676" style={{ marginVertical: 20 }} />
       ) : (
         <TouchableOpacity style={styles.button} onPress={handleCheckUpdate}>
           <Text style={styles.buttonText}>Buscar y Aplicar Cambios</Text>
@@ -51,9 +57,9 @@ export default function UpdatesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212', padding: 20 },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000', padding: 20 },
   title: { fontSize: 22, fontWeight: 'bold', color: '#fff', marginBottom: 15 },
-  status: { fontSize: 14, color: '#aaa', textAlign: 'center', marginBottom: 30 },
-  button: { backgroundColor: '#007AFF', paddingVertical: 14, paddingHorizontal: 24, borderRadius: 8 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
+  status: { fontSize: 14, color: '#aaa', textAlign: 'center', marginBottom: 30, paddingHorizontal: 10 },
+  button: { backgroundColor: '#00e676', paddingVertical: 14, paddingHorizontal: 24, borderRadius: 8 },
+  buttonText: { color: '#000', fontSize: 16, fontWeight: 'bold' }
 });

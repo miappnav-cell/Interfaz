@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "King System",
-    "slug": "interfaz",
+    "slug": "kingsystem",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -11,33 +11,27 @@
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#000000"
-      },
-      "package": "com.kingsystem.interfaz"
-    },
-    "plugins": [
-      "expo-router"
-    ],
-    "scheme": "interfaz",
-    "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "6949d95a-7363-48fb-8646-e71fa5d1bf0b"
-      }
+    "updates": {
+      "fallbackToCacheTimeout": 0
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "updates": {
-      "url": "https://u.expo.dev/6949d95a-7363-48fb-8646-e71fa5d1bf0b"
-    }
+    "android": {
+      "package": "com.kingsystem.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      }
+    },
+    "plugins": [
+      "expo-updates"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d205faa2-e822-4ca6-88eb-7dac9b128cf4"
+      }
+    },
+    "owner": "kingsystem"
   }
 }
