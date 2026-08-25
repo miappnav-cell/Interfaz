@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Instalar Dependencias (Sin interrupciones de red)
+      - name: Instalar Dependencias
         run: npm install --legacy-peer-deps
 
       - name: Configurar Java JDK 17
@@ -26,24 +26,33 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Inyectar version de Kotlin via expo-build-properties en app.json
+        run: |
+          node -e '
+            const fs = require("fs");
+            let file = "app.json";
+            let data = JSON.parse(fs.readFileSync(file, "utf8"));
+            data.expo.plugins = data.expo.plugins || [];
+            
+            let bp = data.expo.plugins.find(p => Array.isArray(p) && p[0] === "expo-build-properties");
+            if (bp) {
+              bp[1].android = bp[1].android || {};
+              bp[1].android.kotlinVersion = "1.9.25";
+            } else {
+              data.expo.plugins.push([
+                "expo-build-properties",
+                {
+                  "android": {
+                    "kotlinVersion": "1.9.25"
+                  }
+                }
+              ]);
+            }
+            fs.writeFileSync(file, JSON.stringify(data, null, 2));
+          '
+
       - name: Generar Estructura Nativa (Expo Prebuild)
         run: npx expo prebuild --platform android --clean
-
-      - name: Forzar Kotlin 1.9.25 para compatibilidad con Compose
-        run: |
-          if [ -f "android/build.gradle" ]; then
-            node -e '
-              const fs = require("fs");
-              let file = "android/build.gradle";
-              let content = fs.readFileSync(file, "utf8");
-              if (content.includes("kotlinVersion =")) {
-                content = content.replace(/kotlinVersion\s*=\s*["\x27].*?["\x27]/g, "kotlinVersion = \"1.9.25\"");
-              } else {
-                content = content.replace("buildscript {", "buildscript {\n    ext.kotlinVersion = \"1.9.25\";");
-              }
-              fs.writeFileSync(file, content);
-            '
-          fi
 
       - name: Compilar APK Definitivo (Debug)
         run: |
