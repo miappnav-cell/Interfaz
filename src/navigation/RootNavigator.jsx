@@ -4,54 +4,61 @@ import { View, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import TopBar from '../components/TopBar/TopBar';
 import SideMenu from '../components/SideMenu/SideMenu';
 
-import UpdatesScreen from '../screens/Updates/UpdatesScreen';
-import SettingsScreen from '../screens/Settings/SettingsScreen';
 import SecurityScreen from '../screens/Security/SecurityScreen';
-import PrivacyScreen from '../screens/Privacy/PrivacyScreen';
 import UsersScreen from '../screens/UsersManager/UsersScreen';
+import WalletScreen from '../screens/Wallet/WalletScreen';
+import UpdatesScreen from '../screens/Updates/UpdatesScreen';
 import ApiScreen from '../screens/ApiSettings/ApiScreen';
-import LogoutHandler from '../screens/Auth/LogoutHandler';
+import PrivacyScreen from '../screens/Privacy/PrivacyScreen';
+import SettingsScreen from '../screens/Settings/SettingsScreen';
 
 export default function RootNavigator() {
-  const [currentScreen, setCurrentScreen] = useState('UsersManager');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Pantalla inicial: Seguridad
+  const [currentScreen, setCurrentScreen] = useState('Security');
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const renderScreen = () => {
     switch (currentScreen) {
-      case 'Updates': return <UpdatesScreen />;
-      case 'Settings': return <SettingsScreen />;
-      case 'Security': return <SecurityScreen />;
-      case 'Privacy': return <PrivacyScreen />;
-      case 'UsersManager': return <UsersScreen />;
-      case 'ApiSettings': return <ApiScreen />;
-      case 'Logout': 
-        return <LogoutHandler onConfirmLogout={() => setCurrentScreen('UsersManager')} />;
-      default: return <UsersScreen />;
+      case 'Security':
+        return <SecurityScreen onUnlock={() => setCurrentScreen('UsersManager')} />;
+      case 'UsersManager':
+        return <UsersScreen />;
+      case 'Wallet':
+        return <WalletScreen />;
+      case 'Updates':
+        return <UpdatesScreen />;
+      case 'ApiSettings':
+        return <ApiScreen />;
+      case 'Privacy':
+        return <PrivacyScreen />;
+      case 'Settings':
+        return <SettingsScreen />;
+      default:
+        return <SecurityScreen onUnlock={() => setCurrentScreen('UsersManager')} />;
     }
   };
 
-  const handleNavigate = (screenName) => {
-    setCurrentScreen(screenName);
-    setIsMenuOpen(false);
-  };
-
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#111" />
-      <TopBar onOpenMenu={() => setIsMenuOpen(true)} />
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#121622" />
+      <TopBar 
+        currentScreen={currentScreen} 
+        onToggleMenu={() => setMenuVisible(true)}
+      />
       <View style={styles.content}>
         {renderScreen()}
       </View>
       <SideMenu 
-        isOpen={isMenuOpen} 
-        onClose={() => setIsMenuOpen(false)} 
-        onNavigate={handleNavigate} 
+        visible={menuVisible} 
+        onClose={() => setMenuVisible(false)} 
+        currentScreen={currentScreen} 
+        onNavigate={setCurrentScreen} 
       />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
+  safeArea: { flex: 1, backgroundColor: '#090a0f' },
   content: { flex: 1 }
 });

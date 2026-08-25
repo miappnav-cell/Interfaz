@@ -1,20 +1,41 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-export default function TopBar({ onOpenMenu }) {
+const SCREEN_NAMES = {
+  Security: '🛡️ SEGURIDAD & ACCESO',
+  UsersManager: '👥 LICENCIAS & BOT',
+  Wallet: '💳 BILLETERA',
+  Updates: '🔄 ACTUALIZACIONES',
+  ApiSettings: '⚡ CONEXIÓN API',
+  Privacy: '🔒 PRIVACIDAD',
+  Settings: '⚙️ CONFIGURACIÓN'
+};
+
+export default function TopBar({ currentScreen, onToggleMenu, isConnected = true }) {
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={onOpenMenu} style={styles.menuButton}>
-        <Text style={styles.menuText}>☰</Text>
+      <TouchableOpacity style={styles.menuBtn} onPress={onToggleMenu}>
+        <Text style={styles.menuIcon}>☰</Text>
       </TouchableOpacity>
-      <Text style={styles.title}>King System</Text>
+
+      <Text style={styles.title}>{SCREEN_NAMES[currentScreen] || currentScreen}</Text>
+
+      <View style={styles.statusBadge}>
+        <View style={[styles.dot, isConnected ? styles.dotGreen : styles.dotRed]} />
+        <Text style={styles.statusText}>{isConnected ? 'ONLINE' : 'OFFLINE'}</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { height: 60, flexDirection: 'row', alignItems: 'center', backgroundColor: '#111', paddingHorizontal: 15, paddingTop: 10 },
-  menuButton: { marginRight: 15 },
-  menuText: { color: '#fff', fontSize: 24 },
-  title: { color: '#fff', fontSize: 18, fontWeight: 'bold' }
+  container: { height: 55, backgroundColor: '#121622', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 15, borderBottomWidth: 1, borderColor: '#1c2333' },
+  menuBtn: { padding: 6 },
+  menuIcon: { color: '#00b0ff', fontSize: 22, fontWeight: 'bold' },
+  title: { color: '#fff', fontSize: 13, fontWeight: 'bold', letterSpacing: 1 },
+  statusBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#090a0f', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, borderWidth: 1, borderColor: '#1c2333' },
+  dot: { width: 6, height: 6, borderRadius: 3, marginRight: 5 },
+  dotGreen: { backgroundColor: '#00e676' },
+  dotRed: { backgroundColor: '#ff5252' },
+  statusText: { color: '#aaa', fontSize: 9, fontWeight: 'bold' }
 });

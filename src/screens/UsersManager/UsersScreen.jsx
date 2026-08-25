@@ -1,3 +1,4 @@
+import socketService from '../../services/socketService';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import UserCard from './components/UserCard';
