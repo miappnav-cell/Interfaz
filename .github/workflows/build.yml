@@ -20,7 +20,7 @@ jobs:
       - name: Instalar Dependencias
         run: npm install --legacy-peer-deps
 
-      - name: Configurar Java JDK
+      - name: Configurar Java JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -29,7 +29,7 @@ jobs:
       - name: Generar Estructura Nativa (Expo Prebuild)
         run: npx expo prebuild --platform android --clean
 
-      - name: Configurar Kotlin y JVM Target en Gradle
+      - name: Alinear Versiones de Kotlin y KSP en Gradle
         run: |
           if [ -f "android/build.gradle" ]; then
             node -e '
@@ -37,16 +37,12 @@ jobs:
               let file = "android/build.gradle";
               let content = fs.readFileSync(file, "utf8");
               
+              // Forzar kotlinVersion compatible con KSP de Expo 52
               if (content.includes("kotlinVersion =")) {
-                content = content.replace(/kotlinVersion\s*=\s*["\x27].*?["\x27]/g, "kotlinVersion = \"1.9.25\"");
+                content = content.replace(/kotlinVersion\s*=\s*["\x27].*?["\x27]/g, "kotlinVersion = \"1.9.23\"");
               } else {
-                content = content.replace("buildscript {", "buildscript {\n    ext.kotlinVersion = \"1.9.25\";");
+                content = content.replace("buildscript {", "buildscript {\n    ext.kotlinVersion = \"1.9.23\";");
               }
-
-              if (!content.includes("kotlinOptions")) {
-                content += "\nallprojects {\n    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {\n        kotlinOptions {\n            jvmTarget = \"17\"\n        }\n    }\n}\n";
-              }
-
               fs.writeFileSync(file, content);
             '
           fi
@@ -60,9 +56,9 @@ jobs:
         run: |
           cd android && chmod +x gradlew
 
-      - name: Compilar APK King System (Con modo Info para diagnóstico)
+      - name: Compilar APK Definitivo (Debug)
         run: |
-          cd android && ./gradlew assembleDebug --info
+          cd android && ./gradlew assembleDebug
 
       - name: Guardar APK como Artifact
         uses: actions/upload-artifact@v4
