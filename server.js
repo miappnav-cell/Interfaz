@@ -1,24 +1,61 @@
-const http = require('http');
+const express = require('express');
+const cors = require('cors');
+
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-const server = http.createServer((req, res) => {
-  // Encabezados para permitir conexiones de cualquier origen
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Content-Type', 'application/json');
+app.use(cors());
+app.use(express.json());
 
-  if (req.url === '/version') {
-    res.writeHead(200);
-    res.end(JSON.stringify({
-      version: "1.0.0",
-      notes: "Actualización disponible para King System",
-      downloadUrl: "https://interfaz-iml8.onrender.com"
-    }));
-  } else {
-    res.writeHead(404);
-    res.end(JSON.stringify({ status: "Error", message: "Ruta no encontrada en King System Server" }));
-  }
+// Ruta raíz
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ONLINE',
+    message: 'Servidor KingSystem API activo',
+    system: 'KingSystem Interfaz 2.4.0'
+  });
 });
 
-server.listen(PORT, () => {
-  console.log(`Servidor de King System corriendo en el puerto ${PORT}`);
+// Endpoint de versión
+app.get('/version', (req, res) => {
+  res.json({
+    status: 'ONLINE',
+    version: '2.4.0',
+    name: 'KingSystem Interfaz API',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Endpoint de estado general
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'HEALTHY',
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
+  });
+});
+
+// Endpoints de la API
+app.get('/api/status', (req, res) => {
+  res.json({ online: true, database: 'CONNECTED', activeConnections: 12 });
+});
+
+app.get('/api/users', (req, res) => {
+  res.json([
+    { id: '1', name: 'Admin Root', role: 'SUPERUSER', status: 'ACTIVE' },
+    { id: '2', name: 'Bot Node 1', role: 'BOT', status: 'ONLINE' }
+  ]);
+});
+
+app.post('/api/security/toggle', (req, res) => {
+  const { mode } = req.body || {};
+  res.json({ success: true, mode: mode || 'ENCRYPTED', updatedBy: 'Admin' });
+});
+
+app.post('/auth/logout', (req, res) => {
+  res.json({ success: true, message: 'Sesión cerrada correctamente' });
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor KingSystem ejecutándose en puerto ${PORT}`);
 });

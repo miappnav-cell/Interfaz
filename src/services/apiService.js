@@ -1,26 +1,39 @@
-import { cacheService } from './cacheService';
-
-const BASE_URL = 'https://render-api-backend.onrender.com';
+const API_BASE_URL = 'https://render-api-backend.onrender.com';
 
 export const apiService = {
-  // Petición optimizada con respaldo en caché
-  fetchWithCache: async (endpoint, ttlSeconds = 120) => {
-    const cachedData = cacheService.get(endpoint);
-    if (cachedData) {
-      return { data: cachedData, fromCache: true };
-    }
-
+  checkVersion: async () => {
     try {
-      const response = await fetch(`${BASE_URL}${endpoint}`);
-      const data = await response.json();
-      cacheService.set(endpoint, data, ttlSeconds);
-      return { data, fromCache: false };
-    } catch (err) {
-      return { error: err.message, fromCache: false };
+      const response = await fetch(`${API_BASE_URL}/version`);
+      return await response.json();
+    } catch (_error) {
+      return { status: 'OFFLINE', version: '2.4.0' };
     }
   },
 
-  clearApiCache: () => {
-    cacheService.clear();
+  getStatus: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/status`);
+      return await response.json();
+    } catch (_error) {
+      return { online: false, database: 'DISCONNECTED' };
+    }
+  },
+
+  getUsers: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users`);
+      return await response.json();
+    } catch (_error) {
+      return [];
+    }
+  },
+
+  logout: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST' });
+      return await response.json();
+    } catch (_error) {
+      return { success: false };
+    }
   }
 };

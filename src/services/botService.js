@@ -1,8 +1,11 @@
-import { apiService } from './apiService';
-
 export const botService = {
   getBotStatus: async () => {
-    return { online: true, activeUsers: 42, totalBroadcasts: 128, webhookStatus: 'HEALTHY' };
+    return {
+      online: true,
+      activeUsers: 42,
+      totalBroadcasts: 128,
+      webhookStatus: 'HEALTHY'
+    };
   },
 
   generateLicenseKey: (days = 30) => {
@@ -11,7 +14,11 @@ export const botService = {
     return `${prefix}-${days}D-${randomHex}`;
   },
 
-  sendBroadcast: async (message) => {
-    return { success: true, deliveredTo: 42, timestamp: new Date().toISOString() };
+  sendBroadcast: async (_message) => {
+    return {
+      success: true,
+      deliveredTo: 42,
+      timestamp: new Date().toISOString()
+    };
   }
 };

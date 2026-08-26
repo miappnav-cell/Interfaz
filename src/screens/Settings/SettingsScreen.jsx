@@ -1,19 +1,37 @@
 import React from 'react';
-import { ScrollView, Text, StyleSheet } from 'react-native';
-import ThemeSelector from './components/ThemeSelector';
-import CacheManagerCard from './components/CacheManagerCard';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 
-export default function SettingsScreen() {
+export const SettingsScreen = () => {
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>CONFIGURACIÓN GENERAL</Text>
-      <ThemeSelector />
-      <CacheManagerCard />
-    </ScrollView>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.title}>Ajustes del Sistema</Text>
+        <Text style={styles.description}>Configuración general de KingSystem Interfaz v2.4.0</Text>
+      </ScrollView>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#090a0f', padding: 15 },
-  header: { color: '#00b0ff', fontSize: 13, fontWeight: '900', marginBottom: 15 }
+  container: {
+    flex: 1,
+    backgroundColor: '#0a0a12',
+    padding: 16
+  },
+  scrollContent: {
+    alignItems: 'center',
+    paddingVertical: 20
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 8
+  },
+  description: {
+    fontSize: 14,
+    color: '#8e8ea0'
+  }
 });
+
+export default SettingsScreen;

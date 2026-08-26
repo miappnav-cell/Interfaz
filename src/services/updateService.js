@@ -10,7 +10,7 @@ export const updateService = {
       
       try {
         data = JSON.parse(responseText);
-      } catch (e) {
+      } catch (_e) {
         // Manejo de respuesta en texto plano o HTML del servidor activo
         if (response.ok) {
           data = { version: currentVersion, notes: 'Servidor Render activo y respondiendo.' };
@@ -24,7 +24,7 @@ export const updateService = {
         notes: data.notes || 'Sistema sincronizado con la nube de Render.',
         downloadUrl: data.downloadUrl || ''
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         hasUpdate: false,
         error: 'Conexión intermitente. Reintentando consulta con el backend...'
