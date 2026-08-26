@@ -22,9 +22,8 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🛠️ Sanitizar package.json y Preparar Entorno
+      - name: 🛠️ Sanitizador Ultra-Estricto de package.json
         run: |
-          # 1. Sanitizar package.json e inyectar metro-config sin llamadas npm prematuras
           node -e '
           const fs = require("fs");
           let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
@@ -34,44 +33,45 @@ jobs:
           pkg.overrides = pkg.overrides || {};
           pkg.overrides["connect"] = "3.7.0";
 
-          // Asegurar devDependencies y agregar metro-config directamente
           pkg.devDependencies = pkg.devDependencies || {};
           pkg.devDependencies["@react-native/metro-config"] = "^0.72.0";
 
-          // Limpiar versiones vacías, nulas o malformadas
-          ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"].forEach(depType => {
-            if (pkg[depType]) {
-              for (let key of Object.keys(pkg[depType])) {
-                let val = pkg[depType][key];
-                if (!val || typeof val !== "string" || val.trim() === "" || val.trim() === "null" || val.trim() === "undefined") {
-                  console.log(`[Sanitizer] Eliminando dependencia con versión inválida: ${key} -> "${val}"`);
-                  delete pkg[depType][key];
+          // Revisar y limpiar todas las secciones de dependencias de forma estricta
+          ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"].forEach(section => {
+            if (pkg[section]) {
+              let cleanSection = {};
+              for (let [k, v] of Object.entries(pkg[section])) {
+                if (k && typeof k === "string" && k.trim() !== "" && v && typeof v === "string" && v.trim() !== "") {
+                  cleanSection[k.trim()] = v.trim();
+                } else {
+                  console.log(`[ALERTA PURGA] Eliminando entrada inválida en ${section}: "${k}" -> "${v}"`);
                 }
               }
+              pkg[section] = cleanSection;
             }
           });
 
           fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-          console.log("package.json saneado exitosamente.");
+          console.log("package.json purgado y saneado correctamente.");
           '
 
-          # 2. Eliminar cualquier lockfile viejo
+          # Limpiar lockfiles previos
           rm -f package-lock.json
 
-          # 3. Crear metro.config.js robusto
+          # Crear metro.config.js robusto
           cat << 'INNER_EOF' > metro.config.js
           const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
           const config = {};
           module.exports = mergeConfig(getDefaultConfig(__dirname), config);
           INNER_EOF
 
-          # 4. Actualizar strings.xml para el nombre de Android
+          # Actualizar strings.xml para el nombre de Android
           STRINGS_PATH="android/app/src/main/res/values/strings.xml"
           if [ -f "$STRINGS_PATH" ]; then
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">King System<\/string>/g' "$STRINGS_PATH"
           fi
 
-          # 5. Inyectar Permisos Esenciales de Android en AndroidManifest.xml
+          # Inyectar Permisos Esenciales de Android en AndroidManifest.xml
           python3 -c '
           import re
           path = "android/app/src/main/AndroidManifest.xml"
@@ -94,7 +94,7 @@ jobs:
               print("Manifest check skipped:", e)
           '
 
-      - name: 📥 Instalar Dependencias Limpias (Única ejecución segura)
+      - name: 📥 Instalar Dependencias
         run: npm install --legacy-peer-deps
 
       - name: 📂 Crear Directorio de Assets de Android
