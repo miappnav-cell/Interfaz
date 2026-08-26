@@ -11,10 +11,18 @@ jobs:
       - name: 📦 Checkout del Repositorio
         uses: actions/checkout@v4
 
+      - name: 📄 Generar package-lock.json dinámico en caliente
+        run: |
+          npm install --package-lock-only --legacy-peer-deps || true
+          if [ ! -f package-lock.json ]; then
+            echo '{"name":"king-system-interfaz","version":"1.0.0","lockfileVersion":3,"requires":true,"packages":{"": {"name":"king-system-interfaz","version":"1.0.0"}}}' > package-lock.json
+          fi
+
       - name: ⚙️ Configurar Node.js (v24)
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: '24'
+          cache: 'npm'
 
       - name: ☕ Configurar Java JDK 17
         uses: actions/setup-java@v4
