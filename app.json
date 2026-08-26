@@ -12,7 +12,8 @@
       "backgroundColor": "#090a0f"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kingsystem.interfaz"
     },
     "android": {
       "adaptiveIcon": {
