@@ -22,9 +22,17 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🏗️ Arquitectura y Saneamiento del Proyecto
+      - name: 🧹 Limpieza de Basura, Obsoletos y Saneamiento Estricto
         run: |
-          # 1. Sanitizar package.json y asegurar que no existan versiones vacías
+          echo "==> [1/5] Eliminando carpetas de caché y compilaciones obsoletas..."
+          rm -rf android/.gradle
+          rm -rf android/app/build
+          rm -rf android/build
+          rm -rf node_modules/.cache
+          rm -f yarn.lock
+          rm -f package-lock.json
+
+          echo "==> [2/5] Sanitizando package.json..."
           node -e '
           const fs = require("fs");
           let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
@@ -50,23 +58,22 @@ jobs:
           console.log("package.json saneado correctamente.");
           '
 
-          # 2. Generar package-lock.json en caliente para evitar errores de dependencias faltantes
+          echo "==> [3/5] Generando package-lock.json limpio en caliente..."
           npm install --package-lock-only --legacy-peer-deps
 
-          # 3. Crear metro.config.js robusto
+          echo "==> [4/5] Configurando Metro Bundler..."
           cat << 'INNER_EOF' > metro.config.js
           const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
           const config = {};
           module.exports = mergeConfig(getDefaultConfig(__dirname), config);
           INNER_EOF
 
-          # 4. Actualizar strings.xml para el nombre de Android
+          echo "==> [5/5] Actualizando recursos nativos de Android (strings.xml y Manifest)..."
           STRINGS_PATH="android/app/src/main/res/values/strings.xml"
           if [ -f "$STRINGS_PATH" ]; then
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">King System<\/string>/g' "$STRINGS_PATH"
           fi
 
-          # 5. Inyectar Permisos Esenciales de Android en AndroidManifest.xml
           python3 -c '
           import re
           path = "android/app/src/main/AndroidManifest.xml"
@@ -89,13 +96,17 @@ jobs:
               print("Manifest check skipped:", e)
           '
 
-      - name: 📥 Instalar Dependencias de Producción
+      - name: 📥 Instalar Dependencias Limpias
         run: npm install --legacy-peer-deps
+
+      - name: 🧹 Limpieza Profunda de Gradle
+        run: |
+          cd android && ./gradlew clean
 
       - name: 📂 Crear Directorio de Assets de Android
         run: mkdir -p android/app/src/main/assets
 
-      - name: ⚡ Generar Bundle Offline de la Aplicación
+      - name: ⚡ Generar Bundle Offline de Producción
         run: |
           npx react-native bundle \
             --platform android \
@@ -104,7 +115,7 @@ jobs:
             --bundle-output android/app/src/main/assets/index.android.bundle \
             --assets-dest android/app/src/main/res
 
-      - name: 🔨 Compilar APK de Producción con Gradle
+      - name: 🔨 Compilar APK de Producción (Release)
         run: |
           cd android && ./gradlew assembleRelease
 
