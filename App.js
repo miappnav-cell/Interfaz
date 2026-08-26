@@ -1,12 +1,19 @@
 import React from 'react';
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar, StyleSheet, View } from 'react-native';
 import RootNavigator from './src/navigation/RootNavigator';
 
 export default function App() {
   return (
-    <>
-      <StatusBar style="light" backgroundColor="#090a0f" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#05050a" />
       <RootNavigator />
-    </>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#05050a',
+  },
+});
