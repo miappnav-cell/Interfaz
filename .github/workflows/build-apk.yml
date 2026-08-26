@@ -11,11 +11,17 @@ jobs:
       - name: 📦 Checkout del Repositorio
         uses: actions/checkout@v4
 
+      - name: 📄 Generar package-lock.json de emergencia
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo '{"name": "king-system-interfaz", "lockfileVersion": 3, "requires": true, "packages": {}}' > package-lock.json
+          fi
+
       - name: ⚙️ Configurar Node.js (v24)
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: ''
+          cache: 'npm'
 
       - name: ☕ Configurar Java JDK 17
         uses: actions/setup-java@v4
@@ -25,7 +31,7 @@ jobs:
 
       - name: 🛠️ Configurar Paquetes, Permisos y Metro
         run: |
-          # 1. Configurar package.json y asegurar dependencias
+          # 1. Configurar package.json
           node -e '
           const fs = require("fs");
           const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
