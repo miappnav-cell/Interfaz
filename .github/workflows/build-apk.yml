@@ -1,10 +1,10 @@
-name: "Build King System APK"
+name: "Build King System APK Release"
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-apk:
+  build-release-apk:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,9 +23,9 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🏷️ Renombrar App a "King System" y Aplicar Parches
+      - name: 🏷️ Configurar Nombre y Parches de Dependencias
         run: |
-          # 1. Configurar nombre y display name en package.json
+          # 1. Configurar package.json
           node -e '
           const fs = require("fs");
           const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
@@ -36,7 +36,7 @@ jobs:
           fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
           '
 
-          # 2. Actualizar el nombre visible en Android (strings.xml) si existe
+          # 2. Actualizar strings.xml si existe para el nombre visible en Android
           STRINGS_PATH="android/app/src/main/res/values/strings.xml"
           if [ -f "$STRINGS_PATH" ]; then
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">King System<\/string>/g' "$STRINGS_PATH"
@@ -52,13 +52,24 @@ jobs:
       - name: 📥 Instalar Dependencias
         run: npm install
 
-      - name: 🔨 Compilar APK de Android (Debug/Release)
+      - name: 📂 Crear Directorio de Assets de Android
+        run: mkdir -p android/app/src/main/assets
+
+      - name: ⚡ Generar e Inyectar index.android.bundle de Producción
         run: |
-          cd android
-          ./gradlew assembleDebug
+          npx react-native bundle \
+            --platform android \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output android/app/src/main/assets/index.android.bundle \
+            --assets-dest android/app/src/main/res
+
+      - name: 🔨 Compilar APK de Producción (Release)
+        run: |
+          cd android && ./gradlew assembleRelease
 
       - name: 📤 Subir APK como Artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: King-System-App
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: King-System-Release-APK
+          path: android/app/build/outputs/apk/release/app-release.apk
