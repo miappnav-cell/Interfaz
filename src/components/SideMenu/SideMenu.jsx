@@ -11,26 +11,26 @@ const MENU_ITEMS = [
   { id: 'Settings', label: '⚙️ Configuración General', tag: 'SISTEMA' }
 ];
 
-export default function SideMenu({ visible, onClose, currentScreen, onNavigate }) {
+export default function SideMenu({ visible, onClose, navigation, currentRoute }) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
         <View style={styles.drawer}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>KING SYSTEM PANEL</Text>
-            <Text style={styles.headerSub}>v2.4.0 • Android Native</Text>
+            <Text style={styles.headerSub}>v2.4.0 • Native Stack</Text>
           </View>
 
           <View style={styles.itemsContainer}>
-            {MENU_ITEMS.map(item => {
-              const active = currentScreen === item.id;
+            {MENU_ITEMS.map((item) => {
+              const active = currentRoute === item.id;
               return (
                 <TouchableOpacity
                   key={item.id}
                   style={[styles.itemBtn, active && styles.activeItemBtn]}
                   onPress={() => {
-                    onNavigate(item.id);
                     onClose();
+                    if (navigation) navigation.navigate(item.id);
                   }}
                 >
                   <Text style={[styles.itemText, active && styles.activeItemText]}>{item.label}</Text>
@@ -52,7 +52,7 @@ export default function SideMenu({ visible, onClose, currentScreen, onNavigate }
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', flexDirection: 'row' },
   drawer: { width: '80%', backgroundColor: '#121622', height: '100%', padding: 20, borderRightWidth: 1, borderColor: '#00b0ff' },
-  header: { marginBottom: 20, borderBottomWidth: 1, borderColor: '#1c2333', pb: 15, paddingBottom: 15 },
+  header: { marginBottom: 20, borderBottomWidth: 1, borderColor: '#1c2333', paddingBottom: 15 },
   headerTitle: { color: '#00b0ff', fontSize: 16, fontWeight: '900', letterSpacing: 1.5 },
   headerSub: { color: '#555', fontSize: 10, marginTop: 2 },
   itemsContainer: { flex: 1 },
