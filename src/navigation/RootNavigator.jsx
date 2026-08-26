@@ -45,7 +45,7 @@ export default function RootNavigator() {
           initialRouteName="Security"
           screenOptions={{
             headerShown: false,
-            animation: 'fade_through'
+            animation: 'fade'
           }}
           screenListeners={{
             state: (e) => {
