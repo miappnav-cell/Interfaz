@@ -18,9 +18,8 @@ export default function SideMenu({ visible, onClose, navigation, currentRoute })
         <View style={styles.drawer}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>KING SYSTEM PANEL</Text>
-            <Text style={styles.headerSub}>v2.4.0 • Native Stack</Text>
+            <Text style={styles.headerSub}>v2.4.0 • Modular Architecture</Text>
           </View>
-
           <View style={styles.itemsContainer}>
             {MENU_ITEMS.map((item) => {
               const active = currentRoute === item.id;
@@ -39,7 +38,6 @@ export default function SideMenu({ visible, onClose, navigation, currentRoute })
               );
             })}
           </View>
-
           <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
             <Text style={styles.closeBtnText}>✖️ CERRAR MENÚ</Text>
           </TouchableOpacity>

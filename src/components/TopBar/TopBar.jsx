@@ -17,9 +17,7 @@ export default function TopBar({ currentScreen, onToggleMenu, isConnected = true
       <TouchableOpacity style={styles.menuBtn} onPress={onToggleMenu}>
         <Text style={styles.menuIcon}>☰</Text>
       </TouchableOpacity>
-
       <Text style={styles.title}>{SCREEN_NAMES[currentScreen] || currentScreen}</Text>
-
       <View style={styles.statusBadge}>
         <View style={[styles.dot, isConnected ? styles.dotGreen : styles.dotRed]} />
         <Text style={styles.statusText}>{isConnected ? 'ONLINE' : 'OFFLINE'}</Text>
