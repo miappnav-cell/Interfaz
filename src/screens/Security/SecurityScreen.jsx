@@ -1,45 +1,26 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Switch } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import notificationSoundService from '../../services/notificationSoundService';
+import BiometricsCard from './components/BiometricsCard';
+import AuditLogsCard from './components/AuditLogsCard';
 
 export const SecurityScreen = () => {
-  const [isEncrypted, setIsEncrypted] = useState(true);
+  const handleSecurityToggle = (status) => {
+    notificationSoundService.playSoundEffect('click');
+    notificationSoundService.triggerNotification('Seguridad', `Biometría cambiada a: ${status ? 'ON' : 'OFF'}`);
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Módulo de Seguridad y Cifrado</Text>
-      <View style={styles.row}>
-        <Text style={styles.label}>Modo Cifrado Seguro:</Text>
-        <Switch 
-          value={isEncrypted} 
-          onValueChange={setIsEncrypted}
-          thumbColor={isEncrypted ? '#00ffff' : '#767577'}
-        />
-      </View>
-    </View>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>🛡️ Panel de Blindaje y Seguridad</Text>
+      <BiometricsCard onToggle={handleSecurityToggle} />
+      <AuditLogsCard />
+    </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#0a0a12'
-  },
-  title: {
-    fontSize: 20,
-    color: '#ffffff',
-    fontWeight: 'bold',
-    marginBottom: 20
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  label: {
-    color: '#a0a0c0',
-    fontSize: 16
-  }
+  container: { flex: 1, backgroundColor: '#05050a' },
+  content: { padding: 16 },
+  title: { color: '#00ffff', fontSize: 18, fontWeight: 'bold', marginBottom: 16 }
 });
-
 export default SecurityScreen;

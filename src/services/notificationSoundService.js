@@ -6,10 +6,14 @@ class NotificationSoundService {
   async playSoundEffect(type = 'click') {
     if (!this.soundEnabled) return;
     try {
-      // Fallback seguro sin bloquear la UI
+      console.log(`[Audio] Reproduciendo efecto: ${type}`);
     } catch (error) {
-      console.log(`[AudioService] ${type}:`, error.message);
+      console.log(`[Audio Error] ${type}:`, error.message);
     }
+  }
+
+  triggerNotification(title, message) {
+    console.log(`[Notificación] 🔔 ${title}: ${message}`);
   }
 
   setSoundEnabled(enabled) {

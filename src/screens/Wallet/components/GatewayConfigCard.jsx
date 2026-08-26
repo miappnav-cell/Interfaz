@@ -1,15 +1,25 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import notificationSoundService from '../../../services/notificationSoundService';
 
-export default function GatewayConfigCard() {
+export const GatewayConfigCard = () => {
+  const handlePress = () => {
+    notificationSoundService.playSoundEffect('click');
+    notificationSoundService.triggerNotification('Wallet', 'Pasarela configurada a modo seguro');
+  };
   return (
     <View style={styles.card}>
-      <Text style={styles.text}>⚙️ PASARELA DE PAGOS (MODULO EN PAUSA)</Text>
+      <Text style={styles.text}>⚡ Pasarela de Enlace Principal</Text>
+      <TouchableOpacity style={styles.btn} onPress={handlePress}>
+        <Text style={styles.btnText}>CONFIGURAR</Text>
+      </TouchableOpacity>
     </View>
   );
-}
-
+};
 const styles = StyleSheet.create({
-  card: { backgroundColor: '#121622', padding: 14, borderRadius: 8, borderWidth: 1, borderColor: '#00b0ff', marginBottom: 12 },
-  text: { color: '#00b0ff', fontSize: 11, fontWeight: 'bold' }
+  card: { backgroundColor: '#0a0a14', padding: 14, borderRadius: 8, borderWidth: 1, borderColor: '#1a1a2e', marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  text: { color: '#fff', fontSize: 13, fontWeight: 'bold' },
+  btn: { backgroundColor: '#00ffff22', borderWidth: 1, borderColor: '#00ffff', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 6 },
+  btnText: { color: '#00ffff', fontSize: 11, fontWeight: 'bold' }
 });
+export default GatewayConfigCard;

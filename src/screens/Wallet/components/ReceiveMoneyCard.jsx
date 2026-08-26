@@ -1,17 +1,25 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import notificationSoundService from '../../../services/notificationSoundService';
 
-export default function ReceiveMoneyCard({ balance }) {
+export const ReceiveMoneyCard = () => {
+  const handlePress = () => {
+    notificationSoundService.playSoundEffect('click');
+    notificationSoundService.triggerNotification('Wallet', 'Código QR de recepción generado');
+  };
   return (
     <View style={styles.card}>
-      <Text style={styles.label}>BALANCES & LICENCIAS</Text>
-      <Text style={styles.amount}>${balance ? balance.toFixed(2) : '0.00'}</Text>
+      <Text style={styles.text}>📥 Recibir Fondos / Nodo Receptor</Text>
+      <TouchableOpacity style={styles.btn} onPress={handlePress}>
+        <Text style={styles.btnText}>GENERAR QR</Text>
+      </TouchableOpacity>
     </View>
   );
-}
-
+};
 const styles = StyleSheet.create({
-  card: { backgroundColor: '#121622', padding: 16, borderRadius: 8, borderWidth: 1, borderColor: '#1c2333', marginBottom: 12 },
-  label: { color: '#6b7a99', fontSize: 10, fontWeight: 'bold', letterSpacing: 1 },
-  amount: { color: '#00e676', fontSize: 24, fontWeight: '900', marginTop: 4 }
+  card: { backgroundColor: '#0a0a14', padding: 14, borderRadius: 8, borderWidth: 1, borderColor: '#1a1a2e', marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  text: { color: '#fff', fontSize: 13, fontWeight: 'bold' },
+  btn: { backgroundColor: '#00ffff22', borderWidth: 1, borderColor: '#00ffff', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 6 },
+  btnText: { color: '#00ffff', fontSize: 11, fontWeight: 'bold' }
 });
+export default ReceiveMoneyCard;

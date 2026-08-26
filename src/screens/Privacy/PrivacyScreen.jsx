@@ -1,18 +1,31 @@
 import React from 'react';
-import { ScrollView, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import notificationSoundService from '../../services/notificationSoundService';
 import PrivacyToggleCard from './components/PrivacyToggleCard';
 
-export default function PrivacyScreen() {
+export const PrivacyScreen = () => {
+  const handleAction = (actionName) => {
+    notificationSoundService.playSoundEffect('click');
+    notificationSoundService.triggerNotification('Privacidad', `${actionName} actualizado con éxito.`);
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>PRIVACIDAD Y PERMISOS</Text>
-      <PrivacyToggleCard label="Cifrado de Telemetría Local" />
-      <PrivacyToggleCard label="Bloqueo de Capturas de Pantalla" />
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>🔒 Centro de Privacidad y Encriptación</Text>
+      <PrivacyToggleCard label="Modo Incógnito de Sesión" onToggle={() => handleAction('Modo Incógnito')} />
+      <PrivacyToggleCard label="Cifrado de Endpoints Activos" onToggle={() => handleAction('Cifrado')} />
+      <TouchableOpacity style={styles.button} onPress={() => handleAction('Exportar Datos de Red')}>
+        <Text style={styles.buttonText}>📤 EXPORTAR REGISTROS DE PRIVACIDAD</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#090a0f', padding: 15 },
-  header: { color: '#00b0ff', fontSize: 13, fontWeight: '900', marginBottom: 15 }
+  container: { flex: 1, backgroundColor: '#05050a' },
+  content: { padding: 16 },
+  title: { color: '#00ffff', fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
+  button: { backgroundColor: '#00ffff22', borderWidth: 1, borderColor: '#00ffff', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 10 },
+  buttonText: { color: '#00ffff', fontWeight: 'bold', fontSize: 13 }
 });
+export default PrivacyScreen;

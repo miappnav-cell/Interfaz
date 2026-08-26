@@ -1,20 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import notificationSoundService from '../../../services/notificationSoundService';
 
-export default function BiometricsCard() {
+export const BiometricsCard = ({ onToggle }) => {
+  const [enabled, setEnabled] = useState(false);
+
+  const handleToggle = () => {
+    notificationSoundService.playSoundEffect('click');
+    const nextState = !enabled;
+    setEnabled(nextState);
+    if (onToggle) onToggle(nextState);
+  };
+
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>🔐 HUELLA DIGITAL / BIOMETRÍA</Text>
-      <TouchableOpacity style={styles.btn}>
-        <Text style={styles.btnText}>☝️ VALIDAR HUELLA LOCAL</Text>
+      <Text style={styles.title}>🔐 Biometría / Huella</Text>
+      <TouchableOpacity style={styles.button} onPress={handleToggle}>
+        <Text style={styles.buttonText}>{enabled ? 'DESACTIVAR' : 'ACTIVAR'}</Text>
       </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: '#121622', padding: 14, borderRadius: 8, borderWidth: 1, borderColor: '#1c2333', marginBottom: 12 },
-  title: { color: '#fff', fontSize: 11, fontWeight: 'bold', marginBottom: 10 },
-  btn: { backgroundColor: '#00b0ff', padding: 10, borderRadius: 6, alignItems: 'center' },
-  btnText: { color: '#000', fontSize: 11, fontWeight: 'bold' }
+  card: { backgroundColor: '#0a0a14', padding: 14, borderRadius: 8, borderWidth: 1, borderColor: '#1a1a2e', marginBottom: 10 },
+  title: { color: '#fff', fontSize: 14, fontWeight: 'bold', marginBottom: 8 },
+  button: { backgroundColor: '#00ffff22', borderWidth: 1, borderColor: '#00ffff', padding: 8, borderRadius: 6, alignItems: 'center' },
+  buttonText: { color: '#00ffff', fontWeight: 'bold', fontSize: 12 }
 });
+
+export default BiometricsCard;

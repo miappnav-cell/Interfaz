@@ -1,21 +1,22 @@
 import React from 'react';
-import { ScrollView, Text, StyleSheet } from 'react-native';
-import ReceiveMoneyCard from './components/ReceiveMoneyCard';
-import GatewayConfigCard from './components/GatewayConfigCard';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import RechargeCard from './components/RechargeCard';
+import GatewayConfigCard from './components/GatewayConfigCard';
+import ReceiveMoneyCard from './components/ReceiveMoneyCard';
 
-export default function WalletScreen() {
+export const WalletScreen = () => {
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>BILLETERA & MOVIMIENTOS</Text>
-      <ReceiveMoneyCard balance={250.00} />
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>💼 Billetera de Créditos y Pasarela</Text>
       <RechargeCard />
       <GatewayConfigCard />
+      <ReceiveMoneyCard />
     </ScrollView>
   );
-}
-
+};
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#090a0f', padding: 15 },
-  header: { color: '#00b0ff', fontSize: 13, fontWeight: '900', marginBottom: 15 }
+  container: { flex: 1, backgroundColor: '#05050a' },
+  content: { padding: 16 },
+  title: { color: '#00ffff', fontSize: 18, fontWeight: 'bold', marginBottom: 16 }
 });
+export default WalletScreen;

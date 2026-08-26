@@ -1,19 +1,25 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import notificationSoundService from '../../../services/notificationSoundService';
 
-export default function UpdateStatusCard() {
+export const UpdateStatusCard = () => {
+  const handlePress = () => {
+    notificationSoundService.playSoundEffect('click');
+    notificationSoundService.triggerNotification('Updates', 'Sistema v2.4.0 al día');
+  };
   return (
     <View style={styles.card}>
-      <Text style={styles.badge}>SISTEMA PRINCIPAL</Text>
-      <Text style={styles.version}>VERSIÓN ACTUAL: v2.4.0</Text>
-      <Text style={styles.subtext}>Compilación en GitHub Actions con React Navigation</Text>
+      <Text style={styles.text}>📡 Estado del Canal OTA</Text>
+      <TouchableOpacity style={styles.btn} onPress={handlePress}>
+        <Text style={styles.btnText}>VERIFICAR</Text>
+      </TouchableOpacity>
     </View>
   );
-}
-
+};
 const styles = StyleSheet.create({
-  card: { backgroundColor: '#121622', padding: 16, borderRadius: 8, borderWidth: 1, borderColor: '#1c2333', marginBottom: 12 },
-  badge: { color: '#00e676', fontSize: 10, fontWeight: 'bold', marginBottom: 4 },
-  version: { color: '#fff', fontSize: 13, fontWeight: 'bold' },
-  subtext: { color: '#666', fontSize: 10, marginTop: 4 }
+  card: { backgroundColor: '#0a0a14', padding: 14, borderRadius: 8, borderWidth: 1, borderColor: '#1a1a2e', marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  text: { color: '#fff', fontSize: 13, fontWeight: 'bold' },
+  btn: { backgroundColor: '#00ffff22', borderWidth: 1, borderColor: '#00ffff', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 6 },
+  btnText: { color: '#00ffff', fontSize: 11, fontWeight: 'bold' }
 });
+export default UpdateStatusCard;
