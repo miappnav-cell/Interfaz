@@ -1,0 +1,50 @@
+name: "Fix React Native Metro Bug"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix-metro:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-size: '18'
+
+      - name: Aplicar correcciones al entorno
+        run: |
+          # Actualizar metro.config.js
+          cat << 'INNER_EOF' > metro.config.js
+          const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+          const config = {};
+          module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+          INNER_EOF
+
+          # Inyectar overrides en package.json usando Node
+          node -e '
+          const fs = require("fs");
+          const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          pkg.overrides = pkg.overrides || {};
+          pkg.overrides["connect"] = "3.7.0";
+          fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+          '
+
+      - name: Crear Pull Request con la solución
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "fix: corregir compatibilidad de metro bundler y connect"
+          title: "🤖 Corrección Automática de Metro Bundler"
+          body: |
+            Este Pull Request corrige el fallo de inicialización en React Native 0.76.
+            - Actualiza `metro.config.js` para heredar de `@react-native/metro-config`.
+            - Fuerza `connect@3.7.0` mediante `overrides` en `package.json`.
+          branch: fix/metro-bundler-bug
