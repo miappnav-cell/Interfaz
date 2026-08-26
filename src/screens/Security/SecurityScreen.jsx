@@ -1,8 +1,10 @@
 import db from '../../config/db';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import Constellation3D from '../../components/Constellation3D';
 import pool from '../../config/db';
+import { soundService } from '../../services/soundService';
+import { notificationService } from '../../services/notificationService';
 
 export default function SecurityScreen() {
   const [nodeStatus, setNodeStatus] = useState({
@@ -11,22 +13,41 @@ export default function SecurityScreen() {
     security: 'ENCRYPTED'
   });
 
+  useEffect(() => {
+    notificationService.requestPermissions();
+  }, []);
+
   const testPostgresNode = async () => {
     try {
       const res = await pool.query('SELECT NOW()');
       if (res.rows.length > 0) {
         setNodeStatus(prev => ({ ...prev, postgres: 'ONLINE' }));
+        await soundService.playSuccess();
+        await notificationService.sendNotification(
+          '👑 KingSystem - Nodo SQL',
+          'Conexión exitosa a PostgreSQL en Render.'
+        );
         Alert.alert('✅ NODO POSTGRESQL', `Conexión exitosa a Render DB.\nTimestamp: ${res.rows[0].now}`);
       }
     } catch (error) {
       setNodeStatus(prev => ({ ...prev, postgres: 'ERROR' }));
+      await soundService.playError();
+      await notificationService.sendNotification(
+        '⚠️ KingSystem - Error de Nodo',
+        'Fallo de comunicación con la base de datos PostgreSQL.'
+      );
       Alert.alert('❌ ERROR DE NODO', `No se pudo conectar a PostgreSQL:\n${error.message}`);
     }
   };
 
-  const toggleSecurityNode = () => {
+  const toggleSecurityNode = async () => {
     const nextState = nodeStatus.security === 'ENCRYPTED' ? 'BYPASS_CHECK' : 'ENCRYPTED';
     setNodeStatus(prev => ({ ...prev, security: nextState }));
+    await soundService.playSuccess();
+    await notificationService.sendNotification(
+      '🛡️ Seguridad Modificada',
+      `Estado del nodo actualizado a: ${nextState}`
+    );
   };
 
   return (
