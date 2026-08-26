@@ -22,23 +22,29 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🛠️ Sanitizar package.json, Permisos y Metro
+      - name: 🛠️ Sanitizar package.json y Preparar Entorno
         run: |
-          # 1. Limpiar versiones vacías o inválidas en package.json de forma estricta
+          # 1. Sanitizar package.json e inyectar metro-config sin llamadas npm prematuras
           node -e '
           const fs = require("fs");
           let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          
           pkg.name = "king-system-interfaz";
           pkg.displayName = "King System";
           pkg.overrides = pkg.overrides || {};
           pkg.overrides["connect"] = "3.7.0";
 
+          // Asegurar devDependencies y agregar metro-config directamente
+          pkg.devDependencies = pkg.devDependencies || {};
+          pkg.devDependencies["@react-native/metro-config"] = "^0.72.0";
+
+          // Limpiar versiones vacías, nulas o malformadas
           ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"].forEach(depType => {
             if (pkg[depType]) {
               for (let key of Object.keys(pkg[depType])) {
                 let val = pkg[depType][key];
                 if (!val || typeof val !== "string" || val.trim() === "" || val.trim() === "null" || val.trim() === "undefined") {
-                  console.log(`[Sanitizer] Eliminando dependencia con versión vacía/inválida: ${key} -> "${val}"`);
+                  console.log(`[Sanitizer] Eliminando dependencia con versión inválida: ${key} -> "${val}"`);
                   delete pkg[depType][key];
                 }
               }
@@ -46,10 +52,10 @@ jobs:
           });
 
           fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-          console.log("package.json saneado correctamente.");
+          console.log("package.json saneado exitosamente.");
           '
 
-          # 2. Eliminar cualquier lockfile viejo que pueda causar conflictos
+          # 2. Eliminar cualquier lockfile viejo
           rm -f package-lock.json
 
           # 3. Crear metro.config.js robusto
@@ -59,16 +65,13 @@ jobs:
           module.exports = mergeConfig(getDefaultConfig(__dirname), config);
           INNER_EOF
 
-          # 4. Asegurar @react-native/metro-config
-          npm install --save-dev @react-native/metro-config --legacy-peer-deps
-
-          # 5. Actualizar strings.xml para el nombre de Android
+          # 4. Actualizar strings.xml para el nombre de Android
           STRINGS_PATH="android/app/src/main/res/values/strings.xml"
           if [ -f "$STRINGS_PATH" ]; then
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">King System<\/string>/g' "$STRINGS_PATH"
           fi
 
-          # 6. Inyectar Permisos Esenciales de Android en AndroidManifest.xml
+          # 5. Inyectar Permisos Esenciales de Android en AndroidManifest.xml
           python3 -c '
           import re
           path = "android/app/src/main/AndroidManifest.xml"
@@ -91,7 +94,7 @@ jobs:
               print("Manifest check skipped:", e)
           '
 
-      - name: 📥 Instalar Dependencias Limpias
+      - name: 📥 Instalar Dependencias Limpias (Única ejecución segura)
         run: npm install --legacy-peer-deps
 
       - name: 📂 Crear Directorio de Assets de Android
