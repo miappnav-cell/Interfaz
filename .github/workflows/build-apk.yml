@@ -22,53 +22,38 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🧹 Limpieza de Basura, Obsoletos y Saneamiento Estricto
+      - name: 🛠️ Purgar package.json y Eliminar Lockfiles Corruptos
         run: |
-          echo "==> [1/5] Eliminando carpetas de caché y compilaciones obsoletas..."
-          rm -rf android/.gradle
-          rm -rf android/app/build
-          rm -rf android/build
-          rm -rf node_modules/.cache
-          rm -f yarn.lock
-          rm -f package-lock.json
-
-          echo "==> [2/5] Sanitizando package.json..."
           node -e '
           const fs = require("fs");
           let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
-          pkg.name = "king-system-interfaz";
-          pkg.displayName = "King System";
-          pkg.version = pkg.version && pkg.version.trim() !== "" ? pkg.version : "1.0.0";
-          
-          pkg.overrides = pkg.overrides || {};
-          pkg.overrides["connect"] = "3.7.0";
-
-          ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"].forEach(section => {
-            if (pkg[section]) {
+          ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"].forEach(sec => {
+            if (pkg[sec]) {
               let clean = {};
-              for (let [k, v] of Object.entries(pkg[section])) {
+              for (let [k, v] of Object.entries(pkg[sec])) {
                 if (k && typeof k === "string" && k.trim() !== "" && v && typeof v === "string" && v.trim() !== "") {
                   clean[k.trim()] = v.trim();
                 }
               }
-              pkg[section] = clean;
+              pkg[sec] = clean;
             }
           });
           fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-          console.log("package.json saneado correctamente.");
+          console.log("package.json saneado correctamente en la nube.");
           '
+          rm -f package-lock.json yarn.lock
 
-          echo "==> [3/5] Generando package-lock.json limpio en caliente..."
-          npm install --package-lock-only --legacy-peer-deps
+      - name: 📥 Instalar Dependencias y Generar Lockfile Limpio
+        run: npm install --legacy-peer-deps
 
-          echo "==> [4/5] Configurando Metro Bundler..."
+      - name: 🛠️ Preparar Metro y Android
+        run: |
           cat << 'INNER_EOF' > metro.config.js
           const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
           const config = {};
           module.exports = mergeConfig(getDefaultConfig(__dirname), config);
           INNER_EOF
 
-          echo "==> [5/5] Actualizando recursos nativos de Android (strings.xml y Manifest)..."
           STRINGS_PATH="android/app/src/main/res/values/strings.xml"
           if [ -f "$STRINGS_PATH" ]; then
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">King System<\/string>/g' "$STRINGS_PATH"
@@ -90,36 +75,24 @@ jobs:
               """
               if "android.permission.INTERNET" not in content:
                   content = re.sub(r"(<application)", perms + r"\1", content)
-                  with open(path, "w") as f:
+                  with open(path, "w", encoding="utf-8") as f:
                       f.write(content)
           except Exception as e:
               print("Manifest check skipped:", e)
           '
 
-      - name: 📥 Instalar Dependencias Limpias
-        run: npm install --legacy-peer-deps
-
-      - name: 🧹 Limpieza Profunda de Gradle
+      - name: 🔨 Compilar APK Release con Gradle
         run: |
-          cd android && ./gradlew clean
-
-      - name: 📂 Crear Directorio de Assets de Android
-        run: mkdir -p android/app/src/main/assets
-
-      - name: ⚡ Generar Bundle Offline de Producción
-        run: |
+          mkdir -p android/app/src/main/assets
           npx react-native bundle \
             --platform android \
             --dev false \
             --entry-file index.js \
             --bundle-output android/app/src/main/assets/index.android.bundle \
             --assets-dest android/app/src/main/res
+          cd android && ./gradlew clean assembleRelease
 
-      - name: 🔨 Compilar APK de Producción (Release)
-        run: |
-          cd android && ./gradlew assembleRelease
-
-      - name: 📤 Subir APK como Artefacto Funcional
+      - name: 📤 Subir APK como Artefacto
         uses: actions/upload-artifact@v4
         with:
           name: King-System-Release-APK
