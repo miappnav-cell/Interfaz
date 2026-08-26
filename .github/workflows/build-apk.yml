@@ -11,7 +11,7 @@ jobs:
       - name: 📦 Checkout del Repositorio
         uses: actions/checkout@v4
 
-      - name: ⚙️ Configurar Node.js (v24 sin caché estricta)
+      - name: ⚙️ Configurar Node.js (v24 Limpio y Seguro)
         uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -24,7 +24,7 @@ jobs:
 
       - name: 🛠️ Configurar Paquetes, Permisos y Metro
         run: |
-          # 1. Configurar package.json
+          # 1. Configurar package.json y asegurar dependencias
           node -e '
           const fs = require("fs");
           const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
@@ -51,7 +51,7 @@ jobs:
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">King System<\/string>/g' "$STRINGS_PATH"
           fi
 
-          # 5. Inyectar Permisos Esenciales de Android en AndroidManifest.xml
+          # 5. Inyectar Permisos Esenciales de Android en AndroidManifest.xml de forma segura
           python3 -c '
           import re
           path = "android/app/src/main/AndroidManifest.xml"
@@ -74,7 +74,7 @@ jobs:
               print("Manifest check skipped:", e)
           '
 
-      - name: 📥 Instalar Dependencias del Proyecto
+      - name: 📥 Instalar Dependencias (Generará el lockfile real automáticamente)
         run: npm install
 
       - name: 📂 Crear Directorio de Assets de Android
