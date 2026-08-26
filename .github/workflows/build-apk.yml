@@ -11,7 +11,7 @@ jobs:
       - name: 📦 Checkout del Repositorio
         uses: actions/checkout@v4
 
-      - name: ⚙️ Configurar Node.js (v24 sin caché estricta)
+      - name: ⚙️ Configurar Node.js (v24)
         uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -22,9 +22,9 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🛠️ Configurar Paquetes, Permisos y Metro
+      - name: 🛠️ Limpiar package.json, Permisos y Metro
         run: |
-          # 1. Configurar package.json
+          # 1. Limpiar versiones vacías o inválidas en package.json y asegurar configuración
           node -e '
           const fs = require("fs");
           const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
@@ -32,26 +32,42 @@ jobs:
           pkg.displayName = "King System";
           pkg.overrides = pkg.overrides || {};
           pkg.overrides["connect"] = "3.7.0";
+
+          // Limpiar dependencias con versiones vacías o nulas
+          ["dependencies", "devDependencies", "peerDependencies"].forEach(depType => {
+            if (pkg[depType]) {
+              for (let key in pkg[depType]) {
+                if (!pkg[depType][key] || typeof pkg[depType][key] !== "string" || pkg[depType][key].trim() === "") {
+                  console.log(`Eliminando dependencia con versión inválida: ${key}`);
+                  delete pkg[depType][key];
+                }
+              }
+            }
+          });
+
           fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
           '
 
-          # 2. Crear metro.config.js robusto
+          # 2. Generar un package-lock.json limpio y válido automáticamente
+          npm install --package-lock-only --legacy-peer-deps
+
+          # 3. Crear metro.config.js robusto
           cat << 'INNER_EOF' > metro.config.js
           const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
           const config = {};
           module.exports = mergeConfig(getDefaultConfig(__dirname), config);
           INNER_EOF
 
-          # 3. Asegurar @react-native/metro-config
-          npm install --save-dev @react-native/metro-config
+          # 4. Asegurar @react-native/metro-config
+          npm install --save-dev @react-native/metro-config --legacy-peer-deps
 
-          # 4. Actualizar strings.xml para el nombre de Android
+          # 5. Actualizar strings.xml para el nombre de Android
           STRINGS_PATH="android/app/src/main/res/values/strings.xml"
           if [ -f "$STRINGS_PATH" ]; then
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">King System<\/string>/g' "$STRINGS_PATH"
           fi
 
-          # 5. Inyectar Permisos Esenciales de Android en AndroidManifest.xml
+          # 6. Inyectar Permisos Esenciales de Android en AndroidManifest.xml
           python3 -c '
           import re
           path = "android/app/src/main/AndroidManifest.xml"
@@ -75,7 +91,7 @@ jobs:
           '
 
       - name: 📥 Instalar Dependencias del Proyecto
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: 📂 Crear Directorio de Assets de Android
         run: mkdir -p android/app/src/main/assets
