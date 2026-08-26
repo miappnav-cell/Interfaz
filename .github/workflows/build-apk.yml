@@ -11,30 +11,10 @@ jobs:
       - name: 📦 Checkout del Repositorio
         uses: actions/checkout@v4
 
-      - name: 📄 Crear package-lock.json base para el Runner
-        run: |
-          if [ ! -f package-lock.json ]; then
-            cat << 'LOCKEOF' > package-lock.json
-          {
-            "name": "king-system-interfaz",
-            "version": "1.0.0",
-            "lockfileVersion": 3,
-            "requires": true,
-            "packages": {
-              "": {
-                "name": "king-system-interfaz",
-                "version": "1.0.0"
-              }
-            }
-          }
-          LOCKEOF
-          fi
-
-      - name: ⚙️ Configurar Node.js (v24)
+      - name: ⚙️ Configurar Node.js (v24 sin caché estricta)
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: 'npm'
 
       - name: ☕ Configurar Java JDK 17
         uses: actions/setup-java@v4
