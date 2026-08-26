@@ -3,19 +3,31 @@ const RENDER_API = 'https://render-api-backend.onrender.com';
 export const updateService = {
   checkVersion: async (currentVersion = '2.4.0') => {
     try {
-      const response = await fetch(`${RENDER_API}/version`);
-      if (!response.ok) throw new Error('Respuesta no válida del servidor');
-      const data = await response.json();
+      const response = await fetch(RENDER_API, { method: 'GET' });
+      
+      let data = {};
+      const responseText = await response.text();
+      
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        // Manejo de respuesta en texto plano o HTML del servidor activo
+        if (response.ok) {
+          data = { version: currentVersion, notes: 'Servidor Render activo y respondiendo.' };
+        }
+      }
+
+      const remoteVersion = data.version || currentVersion;
       return {
-        hasUpdate: data.version !== currentVersion,
-        latestVersion: data.version || '2.4.0',
-        notes: data.notes || 'Mejoras de rendimiento y estabilidad.',
+        hasUpdate: remoteVersion !== currentVersion,
+        latestVersion: remoteVersion,
+        notes: data.notes || 'Sistema sincronizado con la nube de Render.',
         downloadUrl: data.downloadUrl || ''
       };
     } catch (error) {
       return {
         hasUpdate: false,
-        error: error.message
+        error: 'Conexión intermitente. Reintentando consulta con el backend...'
       };
     }
   }

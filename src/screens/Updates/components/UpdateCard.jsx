@@ -24,11 +24,11 @@ export default function UpdateCard() {
       {result && (
         <View style={styles.responseContainer}>
           {result.error ? (
-            <Text style={styles.errorText}>❌ Error: {result.error}</Text>
+            <Text style={styles.errorText}>⚠️ {result.error}</Text>
           ) : result.hasUpdate ? (
             <Text style={styles.updateText}>🚀 Nueva versión disponible: v{result.latestVersion}</Text>
           ) : (
-            <Text style={styles.successText}>✅ El sistema está completamente actualizado (v2.4.0)</Text>
+            <Text style={styles.successText}>✅ Sistema en versión óptima (v2.4.0)</Text>
           )}
         </View>
       )}
@@ -37,12 +37,12 @@ export default function UpdateCard() {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: '#121622', padding: 16, borderRadius: 8, borderWidth: 1, borderColor: '#1c2333' },
-  title: { color: '#00b0ff', fontSize: 11, fontWeight: 'bold', marginBottom: 12 },
-  btn: { backgroundColor: '#1c2333', padding: 12, borderRadius: 6, alignItems: 'center', borderWidth: 1, borderColor: '#00b0ff' },
+  card: { backgroundColor: '#121622', padding: 18, borderRadius: 10, borderWidth: 1, borderColor: '#1c2333', marginTop: 10 },
+  title: { color: '#00b0ff', fontSize: 11, fontWeight: 'bold', marginBottom: 14 },
+  btn: { backgroundColor: '#1c2333', paddingVertical: 14, borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#00b0ff' },
   btnText: { color: '#00b0ff', fontSize: 11, fontWeight: 'bold' },
-  responseContainer: { marginTop: 12, padding: 10, backgroundColor: '#090a0f', borderRadius: 6 },
-  successText: { color: '#00e676', fontSize: 10, textAlign: 'center' },
-  updateText: { color: '#ffb300', fontSize: 10, textAlign: 'center', fontWeight: 'bold' },
+  responseContainer: { marginTop: 14, padding: 12, backgroundColor: '#090a0f', borderRadius: 8, borderWidth: 1, borderColor: '#1c2333' },
+  successText: { color: '#00e676', fontSize: 11, textAlign: 'center', fontWeight: 'bold' },
+  updateText: { color: '#ffb300', fontSize: 11, textAlign: 'center', fontWeight: 'bold' },
   errorText: { color: '#ff5252', fontSize: 10, textAlign: 'center' }
 });
