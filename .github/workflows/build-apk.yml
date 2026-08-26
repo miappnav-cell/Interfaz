@@ -11,18 +11,10 @@ jobs:
       - name: 📦 Checkout del Repositorio
         uses: actions/checkout@v4
 
-      - name: 📄 Generar package-lock.json dinámico en caliente
-        run: |
-          npm install --package-lock-only --legacy-peer-deps || true
-          if [ ! -f package-lock.json ]; then
-            echo '{"name":"king-system-interfaz","version":"1.0.0","lockfileVersion":3,"requires":true,"packages":{"": {"name":"king-system-interfaz","version":"1.0.0"}}}' > package-lock.json
-          fi
-
       - name: ⚙️ Configurar Node.js (v24)
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'npm'
 
       - name: ☕ Configurar Java JDK 17
         uses: actions/setup-java@v4
@@ -30,22 +22,51 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🛠️ Preparar Metro y Configuración de Android
+      - name: 🏗️ Arquitectura y Saneamiento del Proyecto
         run: |
-          # 1. Crear metro.config.js robusto
+          # 1. Sanitizar package.json y asegurar que no existan versiones vacías
+          node -e '
+          const fs = require("fs");
+          let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          pkg.name = "king-system-interfaz";
+          pkg.displayName = "King System";
+          pkg.version = pkg.version && pkg.version.trim() !== "" ? pkg.version : "1.0.0";
+          
+          pkg.overrides = pkg.overrides || {};
+          pkg.overrides["connect"] = "3.7.0";
+
+          ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"].forEach(section => {
+            if (pkg[section]) {
+              let clean = {};
+              for (let [k, v] of Object.entries(pkg[section])) {
+                if (k && typeof k === "string" && k.trim() !== "" && v && typeof v === "string" && v.trim() !== "") {
+                  clean[k.trim()] = v.trim();
+                }
+              }
+              pkg[section] = clean;
+            }
+          });
+          fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+          console.log("package.json saneado correctamente.");
+          '
+
+          # 2. Generar package-lock.json en caliente para evitar errores de dependencias faltantes
+          npm install --package-lock-only --legacy-peer-deps
+
+          # 3. Crear metro.config.js robusto
           cat << 'INNER_EOF' > metro.config.js
           const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
           const config = {};
           module.exports = mergeConfig(getDefaultConfig(__dirname), config);
           INNER_EOF
 
-          # 2. Actualizar strings.xml para el nombre de Android
+          # 4. Actualizar strings.xml para el nombre de Android
           STRINGS_PATH="android/app/src/main/res/values/strings.xml"
           if [ -f "$STRINGS_PATH" ]; then
             sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">King System<\/string>/g' "$STRINGS_PATH"
           fi
 
-          # 3. Inyectar Permisos Esenciales de Android en AndroidManifest.xml
+          # 5. Inyectar Permisos Esenciales de Android en AndroidManifest.xml
           python3 -c '
           import re
           path = "android/app/src/main/AndroidManifest.xml"
@@ -68,13 +89,13 @@ jobs:
               print("Manifest check skipped:", e)
           '
 
-      - name: 📥 Instalar Dependencias
+      - name: 📥 Instalar Dependencias de Producción
         run: npm install --legacy-peer-deps
 
       - name: 📂 Crear Directorio de Assets de Android
         run: mkdir -p android/app/src/main/assets
 
-      - name: ⚡ Generar Bundle Offline de Producción
+      - name: ⚡ Generar Bundle Offline de la Aplicación
         run: |
           npx react-native bundle \
             --platform android \
@@ -83,11 +104,11 @@ jobs:
             --bundle-output android/app/src/main/assets/index.android.bundle \
             --assets-dest android/app/src/main/res
 
-      - name: 🔨 Compilar APK de Producción (Release)
+      - name: 🔨 Compilar APK de Producción con Gradle
         run: |
           cd android && ./gradlew assembleRelease
 
-      - name: 📤 Subir APK como Artefacto
+      - name: 📤 Subir APK como Artefacto Funcional
         uses: actions/upload-artifact@v4
         with:
           name: King-System-Release-APK
