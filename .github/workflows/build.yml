@@ -1,73 +1,46 @@
-name: Compilar King System APK
+name: Build Android APK
 
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
+    name: Build APK
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clonar Repositorio
+      - name: 1. Descargar Repositorio
         uses: actions/checkout@v4
 
-      - name: Configurar Node.js
+      - name: 2. Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
+          cache: 'npm'
 
-      - name: Instalar Dependencias
-        run: npm install --legacy-peer-deps
-
-      - name: Instalar expo-build-properties oficialmente
-        run: npx expo install expo-build-properties
-
-      - name: Configurar Java JDK 17
+      - name: 3. Configurar Java JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Inyectar version de Kotlin via expo-build-properties en app.json
+      - name: 4. Instalar Dependencias
+        run: npm install
+
+      - name: 5. Generar Proyecto Nativo (Expo Prebuild)
+        run: npx expo prebuild --platform android
+
+      - name: 6. Compilar APK con Gradle
         run: |
-          node -e '
-            const fs = require("fs");
-            let file = "app.json";
-            let data = JSON.parse(fs.readFileSync(file, "utf8"));
-            data.expo.plugins = data.expo.plugins || [];
-            
-            let bp = data.expo.plugins.find(p => Array.isArray(p) && p[0] === "expo-build-properties");
-            if (bp) {
-              bp[1].android = bp[1].android || {};
-              bp[1].android.kotlinVersion = "1.9.25";
-            } else {
-              data.expo.plugins.push([
-                "expo-build-properties",
-                {
-                  "android": {
-                    "kotlinVersion": "1.9.25"
-                  }
-                }
-              ]);
-            }
-            fs.writeFileSync(file, JSON.stringify(data, null, 2));
-          '
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
-      - name: Generar Estructura Nativa (Expo Prebuild)
-        run: npx expo prebuild --platform android --clean
-
-      - name: Empaquetar Bundle de JavaScript Offline
-        run: |
-          mkdir -p android/app/src/main/assets
-          npx react-native bundle --platform android --dev false --entry-file node_modules/expo/AppEntry.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/
-
-      - name: Compilar APK Definitivo (Debug con Bundle Integrado)
-        run: |
-          cd android && ./gradlew assembleDebug
-
-      - name: Guardar APK como Artifact
+      - name: 7. Subir Artefacto APK
         uses: actions/upload-artifact@v4
         with:
-          name: KingSystem-Debug
+          name: KingSystem-v2.4.0-APK
           path: android/app/build/outputs/apk/debug/*.apk
