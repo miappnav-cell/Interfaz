@@ -22,23 +22,23 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🛠️ Limpiar package.json, Permisos y Metro
+      - name: 🛠️ Sanitizar package.json, Permisos y Metro
         run: |
-          # 1. Limpiar versiones vacías o inválidas en package.json y asegurar configuración
+          # 1. Limpiar versiones vacías o inválidas en package.json de forma estricta
           node -e '
           const fs = require("fs");
-          const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
           pkg.name = "king-system-interfaz";
           pkg.displayName = "King System";
           pkg.overrides = pkg.overrides || {};
           pkg.overrides["connect"] = "3.7.0";
 
-          // Limpiar dependencias con versiones vacías o nulas
-          ["dependencies", "devDependencies", "peerDependencies"].forEach(depType => {
+          ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"].forEach(depType => {
             if (pkg[depType]) {
-              for (let key in pkg[depType]) {
-                if (!pkg[depType][key] || typeof pkg[depType][key] !== "string" || pkg[depType][key].trim() === "") {
-                  console.log(`Eliminando dependencia con versión inválida: ${key}`);
+              for (let key of Object.keys(pkg[depType])) {
+                let val = pkg[depType][key];
+                if (!val || typeof val !== "string" || val.trim() === "" || val.trim() === "null" || val.trim() === "undefined") {
+                  console.log(`[Sanitizer] Eliminando dependencia con versión vacía/inválida: ${key} -> "${val}"`);
                   delete pkg[depType][key];
                 }
               }
@@ -46,10 +46,11 @@ jobs:
           });
 
           fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+          console.log("package.json saneado correctamente.");
           '
 
-          # 2. Generar un package-lock.json limpio y válido automáticamente
-          npm install --package-lock-only --legacy-peer-deps
+          # 2. Eliminar cualquier lockfile viejo que pueda causar conflictos
+          rm -f package-lock.json
 
           # 3. Crear metro.config.js robusto
           cat << 'INNER_EOF' > metro.config.js
@@ -90,7 +91,7 @@ jobs:
               print("Manifest check skipped:", e)
           '
 
-      - name: 📥 Instalar Dependencias del Proyecto
+      - name: 📥 Instalar Dependencias Limpias
         run: npm install --legacy-peer-deps
 
       - name: 📂 Crear Directorio de Assets de Android
