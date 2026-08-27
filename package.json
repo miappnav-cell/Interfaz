@@ -1,7 +1,8 @@
 {
-  "name": "interfaz-v2",
+  "name": "interfaz",
   "version": "2.4.0",
   "private": true,
+  "main": "App.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -9,43 +10,23 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@expo/vector-icons": "^14.0.0",
-    "axios": "^1.6.8",
+    "@expo/vector-icons": "^14.1.0",
+    "axios": "^1.7.9",
     "expo": "~51.0.0",
-    "expo-av": "~14.0.6",
+    "expo-av": "~14.0.7",
     "expo-local-authentication": "~14.0.1",
     "expo-notifications": "~0.28.9",
     "expo-status-bar": "~1.12.1",
-    "expo-updates": "^57.0.18",
+    "expo-updates": "~0.25.16",
     "react": "18.2.0",
-    "react-native": "0.74.1"
+    "react-native": "0.74.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
   },
   "expo": {
-    "name": "King System Interfaz",
-    "slug": "interfaz-v2",
-    "version": "2.4.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#050B14"
-    },
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#050B14"
-      }
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "gha": {
+      "enabled": true
     }
   }
 }
