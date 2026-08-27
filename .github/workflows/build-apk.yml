@@ -22,48 +22,28 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🔍 Ejecutar Auditoría Total y Enlace de Lógica
+      - name: 🔍 Ejecutar Auditoría Total del Proyecto
         run: |
-          node -e '
-          const fs = require("fs");
-          const path = require("path");
-
-          // 1. Auditoría rápida
-          console.log("👑 Verificando integridad de componentes y lógica...");
-          
-          // 2. Asegurar que App.js no ignore la lógica principal
-          // Si App.js no existe o es un placeholder, creamos un puente maestro que cargue los módulos
-          const appPath = "App.js";
-          if (fs.existsSync(appPath)) {
-            let appContent = fs.readFileSync(appPath, "utf8");
-            if (!appContent.includes("securityService") && fs.existsSync("src/services/securityService.js")) {
-              console.log("🛡️ Inyectando securityService en el flujo principal de App.js...");
-            }
-          }
-          '
+          node audit-project.js
 
       - name: 💣 Limpieza Profunda de Cachés
         run: |
           rm -rf node_modules package-lock.json yarn.lock android ios .gradle android/app/build
 
-      - name: 🛡️ Inyectar Módulos y Blindar Configuración con Node
+      - name: 📝 Blindar app.json y package.json con Node
         run: |
           node -e '
           const fs = require("fs");
-
-          // Blindar package.json asegurando dependencias críticas
           let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
           if (!pkg.version || pkg.version.trim() === "") pkg.version = "1.0.0";
           pkg.dependencies = pkg.dependencies || {};
           pkg.dependencies["expo"] = "~49.0.15";
           pkg.dependencies["expo-status-bar"] = "~1.6.0";
-          pkg.dependencies["expo-local-authentication"] = "~13.4.0";
           pkg.dependencies["react"] = "18.2.0";
           pkg.dependencies["react-native"] = "0.72.6";
           pkg.dependencies["axios"] = "^1.6.2";
           fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-
-          // Crear app.json
+          
           const appJson = {
             expo: {
               name: "King System",
@@ -74,6 +54,7 @@ jobs:
             }
           };
           fs.writeFileSync("app.json", JSON.stringify(appJson, null, 2));
+          console.log("✅ Configuración base blindada.");
           '
 
       - name: 📥 Instalar dependencias con YARN
@@ -85,7 +66,7 @@ jobs:
         run: |
           npx expo prebuild --platform android --clean --non-interactive
 
-      - name: 🔨 Compilar APK con Lógica Total Integrada
+      - name: 🔨 Compilar APK Definitivo con Módulos Integrados
         run: |
           mkdir -p android/app/src/main/assets
           npx expo export:embed \
@@ -99,7 +80,7 @@ jobs:
           chmod +x gradlew
           ./gradlew clean assembleRelease
 
-      - name: 📤 Subir APK con Funcionalidad Completa
+      - name: 📤 Subir APK Final
         uses: actions/upload-artifact@v4
         with:
           name: King-System-Release-APK
