@@ -22,11 +22,11 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 💣 Destrucción de Cachés y Archivos Venenosos
+      - name: 💣 Destrucción de Cachés
         run: |
           rm -rf node_modules package-lock.json yarn.lock android/.gradle android/app/build
 
-      - name: 📝 Escribir package.json Inquebrantable (CON AXIOS PARA API)
+      - name: 📝 Escribir package.json con AXIOS
         run: |
           cat << 'JSON_EOF' > package.json
           {
@@ -40,7 +40,7 @@ jobs:
             "dependencies": {
               "react": "18.2.0",
               "react-native": "0.72.6",
-              "axios": "^1.6.2" 
+              "axios": "^1.6.2"
             },
             "devDependencies": {
               "@babel/core": "^7.20.0",
@@ -56,49 +56,30 @@ jobs:
           }
           JSON_EOF
 
-      - name: 🌐 Inyectar Configuración de API y Endpoints
+      - name: 🌐 Inyectar Configuración API
         run: |
           mkdir -p src/api
           cat << 'API_EOF' > src/api/endpoints.js
-          // ==========================================
-          // 👑 KING SYSTEM - CONEXIONES Y ENDPOINTS
-          // ==========================================
           import axios from 'axios';
-
-          // 1. URL de tu Servidor (Cambiar cuando tengas el backend listo)
-          const SERVER_URL = 'https://api.kingsystem.com/v1'; 
-
-          // 2. Cliente Axios con interceptores y seguridad
+          const SERVER_URL = 'https://api.kingsystem.com/v1';
           export const apiClient = axios.create({
             baseURL: SERVER_URL,
             timeout: 10000,
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
           });
-
-          // 3. Diccionario de Endpoints para fácil acceso
           export const endpoints = {
-            auth: {
-              login: '/auth/login',
-              register: '/auth/register'
-            },
-            system: {
-              sync: '/system/sync-nodes',
-              status: '/system/status'
-            }
+            auth: { login: '/auth/login', register: '/auth/register' },
+            system: { sync: '/system/sync-nodes', status: '/system/status' }
           };
-
-          console.log('🌐 Conexiones API Inicializadas');
+          console.log('🌐 API Lista');
           API_EOF
 
-      - name: 📥 Instalar con YARN (Bypass Definitivo a NPM)
+      - name: 📥 Instalar con YARN
         run: |
           npm install -g yarn
           yarn install
 
-      - name: 🛠️ Preparar Metro y Permisos de Internet (Android)
+      - name: 🛠️ Preparar Metro y Permisos de Internet
         run: |
           cat << 'INNER_EOF' > metro.config.js
           const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
@@ -111,10 +92,7 @@ jobs:
           try:
               with open(path, "r") as f:
                   content = f.read()
-              perms = """
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-              """
+              perms = "<uses-permission android:name=\"android.permission.INTERNET\" />\n<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\" />\n"
               if "android.permission.INTERNET" not in content:
                   content = re.sub(r"(<application)", perms + r"\1", content)
                   with open(path, "w", encoding="utf-8") as f:
