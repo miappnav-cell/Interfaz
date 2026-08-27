@@ -1,0 +1,30 @@
+{
+  "totalScreens": 22,
+  "totalNodes": 0,
+  "screensList": [
+    "src/screens/ApiSettings/ApiScreen.jsx",
+    "src/screens/ApiSettings/components/ApiStatusBadge.jsx",
+    "src/screens/Auth/LogoutHandler.jsx",
+    "src/screens/Privacy/PrivacyScreen.jsx",
+    "src/screens/Privacy/components/PrivacyToggleCard.jsx",
+    "src/screens/Security/SecurityScreen.jsx",
+    "src/screens/Security/components/AuditLogsCard.jsx",
+    "src/screens/Security/components/BiometricsCard.jsx",
+    "src/screens/Settings/SettingsScreen.jsx",
+    "src/screens/Settings/components/CacheManagerCard.jsx",
+    "src/screens/Settings/components/ThemeSelector.jsx",
+    "src/screens/Updates/UpdatesScreen.jsx",
+    "src/screens/Updates/components/UpdateCard.jsx",
+    "src/screens/Updates/components/UpdateStatusCard.jsx",
+    "src/screens/UsersManager/UsersScreen.jsx",
+    "src/screens/UsersManager/components/BotControllerCard.jsx",
+    "src/screens/UsersManager/components/UserCard.jsx",
+    "src/screens/UsersManager/components/UserFilterBar.jsx",
+    "src/screens/Wallet/WalletScreen.jsx",
+    "src/screens/Wallet/components/GatewayConfigCard.jsx",
+    "src/screens/Wallet/components/ReceiveMoneyCard.jsx",
+    "src/screens/Wallet/components/RechargeCard.jsx"
+  ],
+  "nodesList": [],
+  "lastUpdated": "2026-08-27T01:02:43.342Z"
+}

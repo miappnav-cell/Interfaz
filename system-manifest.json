@@ -1,0 +1,51 @@
+{
+  "screens": [
+    "src/screens/ApiSettings/ApiScreen.jsx",
+    "src/screens/ApiSettings/components/ApiStatusBadge.jsx",
+    "src/screens/Auth/LogoutHandler.jsx",
+    "src/screens/Privacy/PrivacyScreen.jsx",
+    "src/screens/Privacy/components/PrivacyToggleCard.jsx",
+    "src/screens/Security/SecurityScreen.jsx",
+    "src/screens/Security/components/AuditLogsCard.jsx",
+    "src/screens/Security/components/BiometricsCard.jsx",
+    "src/screens/Settings/SettingsScreen.jsx",
+    "src/screens/Settings/components/CacheManagerCard.jsx",
+    "src/screens/Settings/components/ThemeSelector.jsx",
+    "src/screens/Updates/UpdatesScreen.jsx",
+    "src/screens/Updates/components/UpdateCard.jsx",
+    "src/screens/Updates/components/UpdateStatusCard.jsx",
+    "src/screens/UsersManager/UsersScreen.jsx",
+    "src/screens/UsersManager/components/BotControllerCard.jsx",
+    "src/screens/UsersManager/components/UserCard.jsx",
+    "src/screens/UsersManager/components/UserFilterBar.jsx",
+    "src/screens/Wallet/WalletScreen.jsx",
+    "src/screens/Wallet/components/GatewayConfigCard.jsx",
+    "src/screens/Wallet/components/ReceiveMoneyCard.jsx",
+    "src/screens/Wallet/components/RechargeCard.jsx"
+  ],
+  "nodes": [],
+  "animations": [],
+  "sounds": [],
+  "security": [
+    "src/services/securityService.js"
+  ],
+  "apis": [
+    "src/config/apiConfig.js",
+    "src/services/apiService.js"
+  ],
+  "components": [
+    "src/components/Constellation3D.jsx",
+    "src/components/SideMenu/SideMenu.jsx",
+    "src/components/TopBar/TopBar.jsx",
+    "src/config/db.js",
+    "src/navigation/RootNavigator.jsx",
+    "src/services/botService.js",
+    "src/services/cacheService.js",
+    "src/services/notificationService.js",
+    "src/services/notificationSoundService.js",
+    "src/services/pushService.js",
+    "src/services/socketService.js",
+    "src/services/soundService.js",
+    "src/services/updateService.js"
+  ]
+}
