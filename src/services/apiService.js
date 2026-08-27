@@ -1,46 +1,65 @@
-import { apiClient } from '../config/apiConfig';
+import axios from 'axios';
+import { API_BASE_URL, TIMEOUT_MS } from '../config/apiConfig';
+import { soundService } from './soundService';
+import { notificationService } from './notificationService';
+
+const apiClient = axios.create({
+  baseURL: API_BASE_URL || 'https://interfaz-v2.onrender.com',
+  timeout: TIMEOUT_MS || 30000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 export const apiService = {
-  // 1. Obtener estado del sistema y manifiesto SDUI desde Render
-  async getSystemStatus() {
+  // Petición genérica de lectura (GET)
+  async get(endpoint, params = {}) {
     try {
-      const response = await apiClient.get('/system/status');
-      return response.data;
+      const response = await apiClient.get(endpoint, { params });
+      return { success: true, data: response.data };
     } catch (error) {
-      console.warn('⚠️ Sin conexión a Render. Operando en modo Offline con caché local.');
-      return {
-        success: false,
-        offline: true,
-        message: 'No se pudo conectar al servidor. Verificando estado local.'
+      console.error(`❌ Error GET [${endpoint}]:`, error.message);
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Error de conexión con el nodo de la nube.' 
       };
     }
   },
 
-  // 2. Enviar comandos de ejecución (Reiniciar, Apagar, Sincronizar)
-  async executeCommand(nodeName, actionType, payload = {}) {
+  // Petición genérica de llamada/acción (POST) con respuesta procesada
+  async callNode(endpoint, payload = {}) {
     try {
-      console.log(`📤 Enviando orden -> Nodo: ${nodeName}, Acción: ${actionType}`);
-      
-      const response = await apiClient.post('/system/execute', {
-        node: nodeName,
-        action: actionType,
-        payload: payload
-      });
+      console.log(`📡 [LLAMADA NODO] -> ${endpoint}`, payload);
+      const response = await apiClient.post(endpoint, payload);
+      const result = response.data;
 
-      // El servidor devuelve un paquete con reglas (audio, notificaciones, etc.)
-      const data = response.data;
-      
-      if (data.rulesEnforced) {
-        console.log(`🔔 Regla del servidor recibida [Sonido]: ${data.rulesEnforced.playSound}`);
+      // Procesar respuesta automática si trae reglas dictadas por el servidor
+      if (result.rulesEnforced) {
+        const { playSound, sendNotification } = result.rulesEnforced;
+        if (playSound) await soundService.playSoundTrigger(playSound);
+        if (sendNotification) await notificationService.triggerServerNotification(sendNotification);
       }
 
-      return data;
+      return {
+        success: result.success ?? true,
+        message: result.message || 'Operación completada en el nodo.',
+        data: result.data || result,
+      };
     } catch (error) {
-      console.error('❌ Error crítico ejecutando comando:', error.message);
+      console.error(`❌ Error POST [${endpoint}]:`, error.message);
       return {
         success: false,
-        message: error.response?.data?.error || 'Error de comunicación con el servidor.'
+        message: error.response?.data?.message || 'El nodo no respondió a la llamada.',
       };
     }
+  },
+
+  // Mantener compatibilidad con llamadas directas
+  async getSystemStatus() {
+    return (await this.get('/system/status')).data || null;
+  },
+
+  async executeCommand(nodeName, actionType) {
+    return await this.callNode('/system/execute', { nodeName, actionType });
   }
 };

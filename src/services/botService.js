@@ -1,24 +1,11 @@
+import { apiService } from './apiService';
+import { ENDPOINTS } from '../api/endpoints';
+
 export const botService = {
-  getBotStatus: async () => {
-    return {
-      online: true,
-      activeUsers: 42,
-      totalBroadcasts: 128,
-      webhookStatus: 'HEALTHY'
-    };
+  async getBots() {
+    return await apiService.get(ENDPOINTS.BOTS);
   },
-
-  generateLicenseKey: (days = 30) => {
-    const prefix = 'KING';
-    const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return `${prefix}-${days}D-${randomHex}`;
-  },
-
-  sendBroadcast: async (_message) => {
-    return {
-      success: true,
-      deliveredTo: 42,
-      timestamp: new Date().toISOString()
-    };
+  async executeBotAction(botId, action) {
+    return await apiService.callNode(ENDPOINTS.BOTS, { botId, action });
   }
 };
