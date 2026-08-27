@@ -1,6 +1,6 @@
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
 
+// Configurar comportamiento global de alertas
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -10,26 +10,22 @@ Notifications.setNotificationHandler({
 });
 
 export const notificationService = {
-  requestPermissions: async () => {
-    if (Platform.OS !== 'web') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      return status === 'granted';
-    }
-    return false;
-  },
-
-  sendNotification: async (title, body) => {
+  async triggerServerNotification(notifData) {
     try {
+      if (!notifData) return;
+
+      console.log(`🔔 Disparando notificación ordenada por Render:`, notifData.title);
+
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: title,
-          body: body,
+          title: notifData.title,
+          body: notifData.body,
           sound: 'default',
         },
-        trigger: null,
+        trigger: null, // Disparar de inmediato
       });
     } catch (error) {
-      console.log('Error enviando notificación:', error.message);
+      console.error('❌ Error al disparar notificación local:', error.message);
     }
   }
 };

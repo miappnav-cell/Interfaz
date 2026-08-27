@@ -23,3 +23,5 @@ web-build/
 Thumbs.db
 .idea/
 .vscode/
+android/
+ios/
