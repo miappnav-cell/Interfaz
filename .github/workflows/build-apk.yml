@@ -39,7 +39,6 @@ jobs:
           pkg.dependencies = pkg.dependencies || {};
           pkg.devDependencies = pkg.devDependencies || {};
           
-          // Asegurar dependencias esenciales de Expo y React Native para que Metro no falle
           pkg.dependencies["expo"] = "~49.0.15";
           pkg.dependencies["expo-status-bar"] = "~1.6.0";
           pkg.dependencies["react"] = "18.2.0";
@@ -95,7 +94,7 @@ jobs:
               print("Manifest check skipped:", e)
           '
 
-      - name: 🔨 Compilar APK Release con Gradle
+      - name: 🔨 Generar Bundle y Compilar APK con Gradle (Auto-Wrapper)
         run: |
           mkdir -p android/app/src/main/assets
           npx react-native bundle \
@@ -104,7 +103,15 @@ jobs:
             --entry-file index.js \
             --bundle-output android/app/src/main/assets/index.android.bundle \
             --assets-dest android/app/src/main/res
-          cd android && ./gradlew clean assembleRelease
+
+          cd android
+          # Si gradlew no existe, lo generamos automáticamente para evitar errores
+          if [ ! -f "gradlew" ]; then
+            echo "⚙️ Generando gradlew faltante con gradle wrapper..."
+            gradle wrapper
+          fi
+          chmod +x gradlew
+          ./gradlew clean assembleRelease
 
       - name: 📤 Subir APK
         uses: actions/upload-artifact@v4
