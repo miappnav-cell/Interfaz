@@ -22,61 +22,9 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 💣 Limpieza Profunda de Cachés
+      - name: 🔍 Ejecutar Auditoría y Mapeo de Nodos y Pantallas
         run: |
-          rm -rf node_modules package-lock.json yarn.lock android ios .gradle android/app/build
-
-      - name: 📝 Crear app.json y Blindar package.json
-        run: |
-          cat << 'APP_EOF' > app.json
-          {
-            "expo": {
-              "name": "King System",
-              "slug": "king-system",
-              "version": "1.0.0",
-              "sdkVersion": "49.0.0",
-              "android": {
-                "package": "com.kingsystem.interfaz"
-              }
-            }
-          }
-          APP_EOF
-
-          node -e '
-          const fs = require("fs");
-          let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
-          
-          if (!pkg.version || pkg.version.trim() === "") pkg.version = "1.0.0";
-          pkg.dependencies = pkg.dependencies || {};
-          pkg.devDependencies = pkg.devDependencies || {};
-          
-          pkg.dependencies["expo"] = "~49.0.15";
-          pkg.dependencies["expo-status-bar"] = "~1.6.0";
-          pkg.dependencies["react"] = "18.2.0";
-          pkg.dependencies["react-native"] = "0.72.6";
-          pkg.dependencies["axios"] = "^1.6.2";
-          
-          fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-          console.log("✅ Configuración asegurada.");
-          '
-
-      - name: 🌐 Inyectar Configuración API
-        run: |
-          mkdir -p src/api
-          cat << 'API_EOF' > src/api/endpoints.js
-          import axios from "axios";
-          const SERVER_URL = "https://api.kingsystem.com/v1";
-          export const apiClient = axios.create({
-            baseURL: SERVER_URL,
-            timeout: 10000,
-            headers: { "Content-Type": "application/json", "Accept": "application/json" }
-          });
-          export const endpoints = {
-            auth: { login: "/auth/login", register: "/auth/register" },
-            system: { sync: "/system/sync-nodes", status: "/system/status" }
-          };
-          console.log("🌐 API Lista");
-          API_EOF
+          node audit-project.js
 
       - name: 📥 Instalar dependencias con YARN
         run: |
@@ -86,28 +34,6 @@ jobs:
       - name: 🏗️ Generar Entorno Nativo con Expo Prebuild
         run: |
           npx expo prebuild --platform android --clean --non-interactive
-
-      - name: 🛠️ Preparar Metro y Permisos de Internet
-        run: |
-          cat << 'INNER_EOF' > metro.config.js
-          const { getDefaultConfig, mergeConfig } = require("@react-native/metro-config");
-          module.exports = mergeConfig(getDefaultConfig(__dirname), {});
-          INNER_EOF
-
-          python3 -c '
-          import re
-          path = "android/app/src/main/AndroidManifest.xml"
-          try:
-              with open(path, "r") as f:
-                  content = f.read()
-              perms = "<uses-permission android:name=\"android.permission.INTERNET\" />\n<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\" />\n"
-              if "android.permission.INTERNET" not in content:
-                  content = re.sub(r"(<application)", perms + r"\1", content)
-                  with open(path, "w", encoding="utf-8") as f:
-                      f.write(content)
-          except Exception as e:
-              print("Manifest check skipped:", e)
-          '
 
       - name: 🔨 Generar Bundle y Compilar APK con Gradle
         run: |
@@ -123,7 +49,7 @@ jobs:
           chmod +x gradlew
           ./gradlew clean assembleRelease
 
-      - name: 📤 Subir APK
+      - name: 📤 Subir APK con Arquitectura Mapeada
         uses: actions/upload-artifact@v4
         with:
           name: King-System-Release-APK
