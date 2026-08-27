@@ -11,7 +11,7 @@ jobs:
       - name: 📦 Checkout del Repositorio
         uses: actions/checkout@v4
 
-      - name: ⚙️ Configurar Node.js 24 (Sin Advertencias)
+      - name: ⚙️ Configurar Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -22,56 +22,56 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 💣 Destrucción de Cachés
+      - name: 💣 Limpiar Cachés
         run: |
           rm -rf node_modules package-lock.json yarn.lock android/.gradle android/app/build
 
-      - name: 📝 Escribir package.json con AXIOS
+      - name: 📝 Cirugía al package.json Original
         run: |
-          cat << 'JSON_EOF' > package.json
-          {
-            "name": "king-system",
-            "version": "1.0.0",
-            "private": true,
-            "scripts": {
-              "android": "react-native run-android",
-              "start": "react-native start"
-            },
-            "dependencies": {
-              "react": "18.2.0",
-              "react-native": "0.72.6",
-              "axios": "^1.6.2"
-            },
-            "devDependencies": {
-              "@babel/core": "^7.20.0",
-              "@babel/preset-env": "^7.20.0",
-              "@babel/runtime": "^7.20.0",
-              "@react-native/metro-config": "^0.72.6",
-              "babel-jest": "^29.2.1",
-              "jest": "^29.2.1",
-              "metro-react-native-babel-preset": "0.76.8",
-              "react-test-renderer": "18.2.0",
-              "typescript": "5.0.4"
-            }
+          node -e '
+          const fs = require("fs");
+          let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          
+          // 1. Curar la versión inválida que rompía NPM
+          if (!pkg.version || pkg.version.trim() === "" || !/^\d+\.\d+\.\d+/.test(pkg.version)) {
+            pkg.version = "1.0.0";
           }
-          JSON_EOF
+          
+          pkg.dependencies = pkg.dependencies || {};
+          pkg.devDependencies = pkg.devDependencies || {};
+          
+          // 2. Limpiar dependencias vacías fantasmas
+          ["dependencies", "devDependencies"].forEach(sec => {
+            for (let key in pkg[sec]) {
+              if (!pkg[sec][key] || pkg[sec][key].trim() === "") delete pkg[sec][key];
+            }
+          });
+          
+          // 3. Inyectar dependencias vitales sin borrar las tuyas
+          if (!pkg.dependencies["expo"]) pkg.dependencies["expo"] = "~49.0.15";
+          if (!pkg.dependencies["react-native"]) pkg.dependencies["react-native"] = "0.72.6";
+          if (!pkg.dependencies["axios"]) pkg.dependencies["axios"] = "^1.6.2";
+          
+          fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+          console.log("✅ package.json original curado y con Expo inyectado.");
+          '
 
       - name: 🌐 Inyectar Configuración API
         run: |
           mkdir -p src/api
           cat << 'API_EOF' > src/api/endpoints.js
-          import axios from 'axios';
-          const SERVER_URL = 'https://api.kingsystem.com/v1';
+          import axios from "axios";
+          const SERVER_URL = "https://api.kingsystem.com/v1";
           export const apiClient = axios.create({
             baseURL: SERVER_URL,
             timeout: 10000,
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+            headers: { "Content-Type": "application/json", "Accept": "application/json" }
           });
           export const endpoints = {
-            auth: { login: '/auth/login', register: '/auth/register' },
-            system: { sync: '/system/sync-nodes', status: '/system/status' }
+            auth: { login: "/auth/login", register: "/auth/register" },
+            system: { sync: "/system/sync-nodes", status: "/system/status" }
           };
-          console.log('🌐 API Lista');
+          console.log("🌐 API Lista");
           API_EOF
 
       - name: 📥 Instalar con YARN
@@ -82,7 +82,7 @@ jobs:
       - name: 🛠️ Preparar Metro y Permisos de Internet
         run: |
           cat << 'INNER_EOF' > metro.config.js
-          const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+          const { getDefaultConfig, mergeConfig } = require("@react-native/metro-config");
           module.exports = mergeConfig(getDefaultConfig(__dirname), {});
           INNER_EOF
 
@@ -98,7 +98,7 @@ jobs:
                   with open(path, "w", encoding="utf-8") as f:
                       f.write(content)
           except Exception as e:
-              print("Skipped manifest:", e)
+              print("Manifest check skipped:", e)
           '
 
       - name: 🔨 Compilar APK Release con Gradle
