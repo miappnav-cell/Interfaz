@@ -1,29 +1,33 @@
 {
   "expo": {
     "name": "King System Interfaz",
-    "slug": "interfaz",
+    "slug": "interfaz-v2",
     "version": "2.4.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#090a0f"
+      "backgroundColor": "#050B14"
     },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.kingsystem.interfaz"
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/your-project-id"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     },
     "android": {
+      "package": "com.kingsystem.interfaz",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#090a0f"
-      },
-      "package": "com.kingsystem.interfaz"
+        "backgroundColor": "#050B14"
+      }
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
+    "plugins": [
+      "expo-updates",
+      "expo-local-authentication"
+    ]
   }
 }
