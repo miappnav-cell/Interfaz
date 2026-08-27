@@ -12,10 +12,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { apiService } from '../services/apiService';
 import { soundService } from '../services/soundService';
 import { notificationService } from '../services/notificationService';
+import { updateService } from '../services/updateService';
 
 export default function DashboardScreen() {
   const [statusData, setStatusData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [updatingOta, setUpdatingOta] = useState(false);
   const [sandwichExpanded, setSandwichExpanded] = useState(false);
 
   const fetchSystemData = async () => {
@@ -24,6 +26,15 @@ export default function DashboardScreen() {
     const data = await apiService.getSystemStatus();
     setStatusData(data);
     setLoading(false);
+  };
+
+  const handleOtaUpdate = async () => {
+    setUpdatingOta(true);
+    Vibration.v70;
+    const res = await updateService.checkForUpdatesAndApply();
+    alert(res.message || 'Verificación completada.');
+    setUpdatingOta(false);
+    fetchSystemData();
   };
 
   useEffect(() => {
@@ -51,21 +62,33 @@ export default function DashboardScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 🌌 Barra Superior Estelar */}
+      {/* 🌌 Barra Superior con Botón de Actualización OTA Arriba a la Derecha */}
       <View style={styles.topBar}>
         <View style={styles.titleContainer}>
           <View style={styles.stellarCoreGlow} />
           <Text style={styles.appTitle}>KING SYSTEM</Text>
         </View>
-        <TouchableOpacity style={styles.refreshButton} onPress={fetchSystemData}>
-          <Ionicons name="planet" size={16} color="#00F0FF" />
-          <Text style={styles.refreshText}>SINCRONIZAR</Text>
+
+        {/* 🚀 BOTÓN DE ACTUALIZACIÓN / OTA SEPARADO ARRIBA A LA DERECHA CON ICONO Y ETIQUETA */}
+        <TouchableOpacity 
+          style={styles.topRightUpdateButton} 
+          onPress={handleOtaUpdate}
+          disabled={updatingOta}
+        >
+          {updatingOta ? (
+            <ActivityIndicator size="small" color="#00F0FF" />
+          ) : (
+            <>
+              <Ionicons name="cloud-download-outline" size={16} color="#00F0FF" />
+              <Text style={styles.topRightUpdateText}>ACTUALIZAR OTA</Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        {/* 🌠 Tarjeta Cabecera Estelar (Render Core) */}
+        {/* 🌠 Tarjeta Cabecera */}
         <View style={styles.headerCard}>
           <View style={styles.cardHeaderRow}>
             <Ionicons name="sparkles" size={18} color="#00F0FF" />
@@ -104,6 +127,7 @@ export default function DashboardScreen() {
                   <Text style={[styles.badgeText, { color: node.status === 'OPERATIVO' ? '#34D399' : '#F87171' }]}>{node.status}</Text>
                 </View>
 
+                {/* 🏷️ BOTÓN CON ETIQUETA E ICONO EXPLÍCITO */}
                 <TouchableOpacity 
                   style={styles.actionButton} 
                   onPress={() => handleActionPress(node.node_name, 'RESTART')}
@@ -153,17 +177,17 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#050B14', // Color base exacto de la pantalla estelar
+    backgroundColor: '#050B14',
     paddingTop: 35,
   },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#1E3A8A', // Borde estelar
+    borderBottomColor: '#1E3A8A',
     backgroundColor: 'rgba(15, 23, 42, 0.95)',
   },
   titleContainer: {
@@ -184,24 +208,28 @@ const styles = StyleSheet.create({
   appTitle: {
     color: '#FFFFFF',
     fontWeight: '900',
-    fontSize: 16,
-    letterSpacing: 2,
+    fontSize: 14,
+    letterSpacing: 1.5,
   },
-  refreshButton: {
+  topRightUpdateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 240, 255, 0.08)',
+    backgroundColor: 'rgba(0, 240, 255, 0.12)',
     borderWidth: 1,
     borderColor: '#00F0FF',
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
+    shadowColor: '#00F0FF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
   },
-  refreshText: {
+  topRightUpdateText: {
     color: '#00F0FF',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
-    marginLeft: 6,
+    marginLeft: 5,
     letterSpacing: 1,
   },
   scrollContent: {
@@ -209,7 +237,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   headerCard: {
-    backgroundColor: 'rgba(15, 23, 42, 0.85)', // Consistente con las tarjetas de seguridad estelar
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
     borderWidth: 1,
     borderColor: '#1E3A8A',
     borderRadius: 16,
@@ -278,10 +306,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#00F0FF',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
   },
   nodeInfo: {
     flex: 1,
