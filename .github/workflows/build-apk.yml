@@ -30,11 +30,12 @@ jobs:
         run: |
           rm -rf node_modules package-lock.json yarn.lock android ios .gradle android/app/build
 
-      - name: 🛡️ Inyectar Lógica Maestra de Seguridad y Biometría
+      - name: 🛡️ Inyectar Lógica de Seguridad, Biometría y Endpoints con Node
         run: |
-          # 1. Blindar package.json asegurando Expo, Axios y Autenticación Biométrica
           node -e '
           const fs = require("fs");
+
+          // 1. Blindar package.json
           let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
           if (!pkg.version || pkg.version.trim() === "") pkg.version = "1.0.0";
           pkg.dependencies = pkg.dependencies || {};
@@ -45,29 +46,25 @@ jobs:
           pkg.dependencies["react-native"] = "0.72.6";
           pkg.dependencies["axios"] = "^1.6.2";
           fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-          console.log("✅ Dependencias maestras inyectadas.");
-          '
+          console.log("✅ package.json blindado.");
 
-          # 2. Crear app.json obligatorio para Expo Prebuild
-          cat << 'APP_EOF' > app.json
-          {
-            "expo": {
-              "name": "King System",
-              "slug": "king-system",
-              "version": "1.0.0",
-              "sdkVersion": "49.0.0",
-              "android": {
-                "package": "com.kingsystem.interfaz"
-              }
+          // 2. Crear app.json
+          const appJson = {
+            expo: {
+              name: "King System",
+              slug: "king-system",
+              version: "1.0.0",
+              sdkVersion: "49.0.0",
+              android: { package: "com.kingsystem.interfaz" }
             }
-          }
-          APP_EOF
+          };
+          fs.writeFileSync("app.json", JSON.stringify(appJson, null, 2));
+          console.log("✅ app.json creado.");
 
-          # 3. Crear Servicio de Seguridad Activo para el Servidor
-          mkdir -p src/services src/config
-          cat << 'SEC_EOF' > src/services/securityService.js
-          import axios from 'axios';
-          import * as LocalAuthentication from 'expo-local-authentication';
+          // 3. Crear Servicio de Seguridad Biométrica
+          fs.mkdirSync("src/services", { recursive: true });
+          const securityCode = `import axios from "axios";
+          import * as LocalAuthentication from "expo-local-authentication";
 
           const SERVER_URL = "https://api.kingsystem.com/v1";
 
@@ -94,7 +91,7 @@ jobs:
                 throw new Error("Acceso denegado por seguridad biométrica.");
               }
 
-              const response = await axios.post(`${SERVER_URL}/system/command`, {
+              const response = await axios.post(\`\${SERVER_URL}/system/command\`, {
                 action,
                 payload,
                 timestamp: new Date().toISOString(),
@@ -103,27 +100,25 @@ jobs:
               return response.data;
             }
           };
-          console.log("🛡️ securityService cargado y activo.");
-          SEC_EOF
+          console.log("🛡️ securityService cargado.");`;
+          fs.writeFileSync("src/services/securityService.js", securityCode);
 
-      - name: 🌐 Asegurar Configuración API
-        run: |
-          mkdir -p src/api
-          if [ ! -f "src/api/endpoints.js" ]; then
-            cat << 'API_EOF' > src/api/endpoints.js
-            import axios from "axios";
-            const SERVER_URL = "https://api.kingsystem.com/v1";
-            export const apiClient = axios.create({
-              baseURL: SERVER_URL,
-              timeout: 10000,
-              headers: { "Content-Type": "application/json", "Accept": "application/json" }
-            });
-            export const endpoints = {
-              auth: { login: "/auth/login", register: "/auth/register" },
-              system: { sync: "/system/sync-nodes", status: "/system/status", command: "/system/command" }
-            };
-            API_EOF
-          fi
+          // 4. Crear Endpoints de API
+          fs.mkdirSync("src/api", { recursive: true });
+          const apiCode = `import axios from "axios";
+          const SERVER_URL = "https://api.kingsystem.com/v1";
+          export const apiClient = axios.create({
+            baseURL: SERVER_URL,
+            timeout: 10000,
+            headers: { "Content-Type": "application/json", "Accept": "application/json" }
+          });
+          export const endpoints = {
+            auth: { login: "/auth/login", register: "/auth/register" },
+            system: { sync: "/system/sync-nodes", status: "/system/status", command: "/system/command" }
+          };`;
+          fs.writeFileSync("src/api/endpoints.js", apiCode);
+          console.log("🌐 Configuración de API creada.");
+          '
 
       - name: 📥 Instalar dependencias con YARN
         run: |
@@ -148,7 +143,7 @@ jobs:
           chmod +x gradlew
           ./gradlew clean assembleRelease
 
-      - name: 📤 Subir APK con Seguridad y Módulos Activos
+      - name: 📤 Subir APK Definitivo
         uses: actions/upload-artifact@v4
         with:
           name: King-System-Release-APK
