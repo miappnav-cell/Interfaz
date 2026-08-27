@@ -22,20 +22,33 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 💣 Limpiar Cachés
+      - name: 💣 Limpieza Profunda de Cachés
         run: |
-          rm -rf node_modules package-lock.json yarn.lock android/.gradle android/app/build
+          rm -rf node_modules package-lock.json yarn.lock android ios .gradle android/app/build
 
-      - name: 📝 Saneamiento y Blindaje de Expo en package.json
+      - name: 📝 Crear app.json y Blindar package.json
         run: |
+          # 1. Crear app.json obligatorio para Expo Prebuild
+          cat << 'APP_EOF' > app.json
+          {
+            "expo": {
+              "name": "King System",
+              "slug": "king-system",
+              "version": "1.0.0",
+              "sdkVersion": "49.0.0",
+              "android": {
+                "package": "com.kingsystem.interfaz"
+              }
+            }
+          }
+          APP_EOF
+
+          # 2. Sintonizar package.json
           node -e '
           const fs = require("fs");
           let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
           
-          if (!pkg.version || pkg.version.trim() === "" || !/^\d+\.\d+\.\d+/.test(pkg.version)) {
-            pkg.version = "1.0.0";
-          }
-          
+          if (!pkg.version || pkg.version.trim() === "") pkg.version = "1.0.0";
           pkg.dependencies = pkg.dependencies || {};
           pkg.devDependencies = pkg.devDependencies || {};
           
@@ -46,7 +59,7 @@ jobs:
           pkg.dependencies["axios"] = "^1.6.2";
           
           fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-          console.log("✅ Expo y dependencias aseguradas en package.json.");
+          console.log("✅ app.json y package.json configurados correctamente.");
           '
 
       - name: 🌐 Inyectar Configuración API
@@ -72,6 +85,19 @@ jobs:
           npm install -g yarn
           yarn install --legacy-peer-deps
 
+      - name: 🏗️ Generar Entorno Nativo con Expo Prebuild
+        run: |
+          npx expo prebuild --platform android --clean --non-interactive
+
+      - name: 🔍 Verificar existencia de Android Build
+        run: |
+          if [ ! -f "android/settings.gradle" ]; then
+            echo "❌ Error: La carpeta android no se genero correctamente."
+            exit 1
+          else
+            echo "✅ Estructura nativa de Android verificada con exito."
+          fi
+
       - name: 🛠️ Preparar Metro y Permisos de Internet
         run: |
           cat << 'INNER_EOF' > metro.config.js
@@ -94,10 +120,10 @@ jobs:
               print("Manifest check skipped:", e)
           '
 
-      - name: 🔨 Generar Bundle y Compilar APK con Gradle (Auto-Wrapper)
+      - name: 🔨 Generar Bundle y Compilar APK con Gradle
         run: |
           mkdir -p android/app/src/main/assets
-          npx react-native bundle \
+          npx expo export:embed \
             --platform android \
             --dev false \
             --entry-file index.js \
@@ -105,11 +131,6 @@ jobs:
             --assets-dest android/app/src/main/res
 
           cd android
-          # Si gradlew no existe, lo generamos automáticamente para evitar errores
-          if [ ! -f "gradlew" ]; then
-            echo "⚙️ Generando gradlew faltante con gradle wrapper..."
-            gradle wrapper
-          fi
           chmod +x gradlew
           ./gradlew clean assembleRelease
 
