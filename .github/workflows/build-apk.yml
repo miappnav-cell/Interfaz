@@ -26,13 +26,12 @@ jobs:
         run: |
           rm -rf node_modules package-lock.json yarn.lock android/.gradle android/app/build
 
-      - name: 📝 Cirugía al package.json Original
+      - name: 📝 Saneamiento y Blindaje de Expo en package.json
         run: |
           node -e '
           const fs = require("fs");
           let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
           
-          // 1. Curar la versión inválida que rompía NPM
           if (!pkg.version || pkg.version.trim() === "" || !/^\d+\.\d+\.\d+/.test(pkg.version)) {
             pkg.version = "1.0.0";
           }
@@ -40,20 +39,15 @@ jobs:
           pkg.dependencies = pkg.dependencies || {};
           pkg.devDependencies = pkg.devDependencies || {};
           
-          // 2. Limpiar dependencias vacías fantasmas
-          ["dependencies", "devDependencies"].forEach(sec => {
-            for (let key in pkg[sec]) {
-              if (!pkg[sec][key] || pkg[sec][key].trim() === "") delete pkg[sec][key];
-            }
-          });
-          
-          // 3. Inyectar dependencias vitales sin borrar las tuyas
-          if (!pkg.dependencies["expo"]) pkg.dependencies["expo"] = "~49.0.15";
-          if (!pkg.dependencies["react-native"]) pkg.dependencies["react-native"] = "0.72.6";
-          if (!pkg.dependencies["axios"]) pkg.dependencies["axios"] = "^1.6.2";
+          // Asegurar dependencias esenciales de Expo y React Native para que Metro no falle
+          pkg.dependencies["expo"] = "~49.0.15";
+          pkg.dependencies["expo-status-bar"] = "~1.6.0";
+          pkg.dependencies["react"] = "18.2.0";
+          pkg.dependencies["react-native"] = "0.72.6";
+          pkg.dependencies["axios"] = "^1.6.2";
           
           fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-          console.log("✅ package.json original curado y con Expo inyectado.");
+          console.log("✅ Expo y dependencias aseguradas en package.json.");
           '
 
       - name: 🌐 Inyectar Configuración API
@@ -74,10 +68,10 @@ jobs:
           console.log("🌐 API Lista");
           API_EOF
 
-      - name: 📥 Instalar con YARN
+      - name: 📥 Instalar dependencias con YARN
         run: |
           npm install -g yarn
-          yarn install
+          yarn install --legacy-peer-deps
 
       - name: 🛠️ Preparar Metro y Permisos de Internet
         run: |
