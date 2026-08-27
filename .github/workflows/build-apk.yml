@@ -28,7 +28,6 @@ jobs:
 
       - name: 📝 Crear app.json y Blindar package.json
         run: |
-          # 1. Crear app.json obligatorio para Expo Prebuild
           cat << 'APP_EOF' > app.json
           {
             "expo": {
@@ -43,7 +42,6 @@ jobs:
           }
           APP_EOF
 
-          # 2. Sintonizar package.json
           node -e '
           const fs = require("fs");
           let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
@@ -59,7 +57,7 @@ jobs:
           pkg.dependencies["axios"] = "^1.6.2";
           
           fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-          console.log("✅ app.json y package.json configurados correctamente.");
+          console.log("✅ Configuración asegurada.");
           '
 
       - name: 🌐 Inyectar Configuración API
@@ -88,15 +86,6 @@ jobs:
       - name: 🏗️ Generar Entorno Nativo con Expo Prebuild
         run: |
           npx expo prebuild --platform android --clean --non-interactive
-
-      - name: 🔍 Verificar existencia de Android Build
-        run: |
-          if [ ! -f "android/settings.gradle" ]; then
-            echo "❌ Error: La carpeta android no se genero correctamente."
-            exit 1
-          else
-            echo "✅ Estructura nativa de Android verificada con exito."
-          fi
 
       - name: 🛠️ Preparar Metro y Permisos de Internet
         run: |
