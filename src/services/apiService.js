@@ -1,64 +1,46 @@
-import { API_CONFIG } from '../config/apiConfig';
+import { apiClient } from '../config/apiConfig';
 
-class ApiService {
-  async checkHealth() {
+export const apiService = {
+  // 1. Obtener estado del sistema y manifiesto SDUI desde Render
+  async getSystemStatus() {
     try {
-      const res = await fetch(`${API_CONFIG.BASE_URL}/health`);
-      return await res.json();
-    } catch {
-      return { status: 'offline' };
+      const response = await apiClient.get('/system/status');
+      return response.data;
+    } catch (error) {
+      console.warn('⚠️ Sin conexión a Render. Operando en modo Offline con caché local.');
+      return {
+        success: false,
+        offline: true,
+        message: 'No se pudo conectar al servidor. Verificando estado local.'
+      };
     }
-  }
+  },
 
-  async toggleSecurity(data) {
+  // 2. Enviar comandos de ejecución (Reiniciar, Apagar, Sincronizar)
+  async executeCommand(nodeName, actionType, payload = {}) {
     try {
-      const res = await fetch(`${API_CONFIG.BASE_URL}/api/security/toggle`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+      console.log(`📤 Enviando orden -> Nodo: ${nodeName}, Acción: ${actionType}`);
+      
+      const response = await apiClient.post('/system/execute', {
+        node: nodeName,
+        action: actionType,
+        payload: payload
       });
-      return await res.json();
-    } catch {
-      return { success: false };
+
+      // El servidor devuelve un paquete con reglas (audio, notificaciones, etc.)
+      const data = response.data;
+      
+      if (data.rulesEnforced) {
+        console.log(`🔔 Regla del servidor recibida [Sonido]: ${data.rulesEnforced.playSound}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('❌ Error crítico ejecutando comando:', error.message);
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Error de comunicación con el servidor.'
+      };
     }
   }
-
-  async getStatus() {
-    try {
-      const res = await fetch(`${API_CONFIG.BASE_URL}/api/status`);
-      return await res.json();
-    } catch {
-      return null;
-    }
-  }
-
-  async getUsers() {
-    try {
-      const res = await fetch(`${API_CONFIG.BASE_URL}/api/users`);
-      return await res.json();
-    } catch {
-      return [];
-    }
-  }
-
-  async getVersion() {
-    try {
-      const res = await fetch(`${API_CONFIG.BASE_URL}/version`);
-      return await res.json();
-    } catch {
-      return { version: '2.4.0' };
-    }
-  }
-
-  async logout() {
-    try {
-      const res = await fetch(`${API_CONFIG.BASE_URL}/auth/logout`);
-      return await res.json();
-    } catch {
-      return { success: false };
-    }
-  }
-}
-
-export const apiService = new ApiService();
-export default apiService;
+};
