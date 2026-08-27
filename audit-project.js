@@ -10,46 +10,63 @@ function walkDir(dir, callback) {
   });
 }
 
-let screens = [];
-let components = [];
-let nodes = [];
+let inventory = {
+  screens: [],
+  nodes: [],
+  animations: [],
+  sounds: [],
+  security: [],
+  apis: [],
+  components: []
+};
 
-// Escanear la carpeta src o la raíz del proyecto
 const targetDir = fs.existsSync('src') ? 'src' : '.';
 
 walkDir(targetDir, (filePath) => {
   const lower = filePath.toLowerCase();
-  if (lower.endsWith('.js') || lower.endsWith('.tsx') || lower.endsWith('.jsx')) {
+  
+  // Clasificación inteligente por tipo de recurso
+  if (lower.endsWith('.js') || lower.endsWith('.jsx') || lower.endsWith('.tsx')) {
     if (lower.includes('screen') || lower.includes('pantalla')) {
-      screens.push(filePath);
+      inventory.screens.push(filePath);
     } else if (lower.includes('node') || lower.includes('nodo')) {
-      nodes.push(filePath);
+      inventory.nodes.push(filePath);
+    } else if (lower.includes('security') || lower.includes('auth') || lower.includes('seguridad')) {
+      inventory.security.push(filePath);
+    } else if (lower.includes('api') || lower.includes('endpoint')) {
+      inventory.apis.push(filePath);
     } else {
-      components.push(filePath);
+      inventory.components.push(filePath);
     }
+  } else if (lower.endsWith('.json') || lower.endsWith('.gif') || lower.endsWith('.lottie')) {
+    inventory.animations.push(filePath);
+  } else if (lower.endsWith('.mp3') || lower.endsWith('.wav') || lower.endsWith('.aac')) {
+    inventory.sounds.push(filePath);
   }
 });
 
-console.log('=========================================');
-console.log('👑 KING SYSTEM - AUDITORÍA DE ARQUITECTURA');
-console.log('=========================================');
-console.log(`📱 Pantallas detectadas: ${screens.length}`);
-screens.forEach(s => console.log(`   - ${s}`));
+console.log('==================================================');
+console.log('👑 KING SYSTEM - AUDITORÍA Y MAPEO TOTAL DE RECURSOS');
+console.log('==================================================');
+console.log(`📱 Pantallas detectadas: ${inventory.screens.length}`);
+inventory.screens.forEach(s => console.log(`   - ${s}`));
 
-console.log(`\n⚙️ Nodos de seguridad/sistema detectados: ${nodes.length}`);
-nodes.forEach(n => console.log(`   - ${n}`));
+console.log(`\n⚙️ Nodos de sistema detectados: ${inventory.nodes.length}`);
+inventory.nodes.forEach(n => console.log(`   - ${n}`));
 
-console.log(`\n🧩 Componentes y utilitarios: ${components.length}`);
-console.log('=========================================');
+console.log(`\n🔒 Módulos de seguridad: ${inventory.security.length}`);
+inventory.security.forEach(sec => console.log(`   - ${sec}`));
 
-// Opcional: Generar un archivo JSON con el mapa para que la app lo lea dinámicamente
-const systemMap = {
-  totalScreens: screens.length,
-  totalNodes: nodes.length,
-  screensList: screens,
-  nodesList: nodes,
-  lastUpdated: new Date().toISOString()
-};
+console.log(`\n🌐 APIs y Endpoints: ${inventory.apis.length}`);
+inventory.apis.forEach(a => console.log(`   - ${a}`));
 
-fs.writeFileSync('system-map.json', JSON.stringify(systemMap, null, 2));
-console.log('📄 Archivo system-map.json generado con éxito.');
+console.log(`\n🎬 Animaciones y gráficos: ${inventory.animations.length}`);
+inventory.animations.forEach(an => console.log(`   - ${an}`));
+
+console.log(`\n🎵 Archivos de sonido: ${inventory.sounds.length}`);
+inventory.sounds.forEach(so => console.log(`   - ${so}`));
+console.log('==================================================');
+
+// Guardar el manifiesto total para que la app y el APK lo reconozcan
+fs.writeFileSync('system-manifest.json', JSON.stringify(inventory, null, 2));
+console.log('✅ Manifiesto total generado en system-manifest.json');

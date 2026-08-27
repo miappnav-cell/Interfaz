@@ -22,9 +22,61 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🔍 Ejecutar Auditoría y Mapeo de Nodos y Pantallas
+      - name: 🔍 Ejecutar Auditoría Total (Pantallas, Nodos, Animaciones, Sonidos y APIs)
         run: |
           node audit-project.js
+
+      - name: 💣 Limpieza Profunda de Cachés
+        run: |
+          rm -rf node_modules package-lock.json yarn.lock android ios .gradle android/app/build
+
+      - name: 📝 Blindar app.json y package.json
+        run: |
+          cat << 'APP_EOF' > app.json
+          {
+            "expo": {
+              "name": "King System",
+              "slug": "king-system",
+              "version": "1.0.0",
+              "sdkVersion": "49.0.0",
+              "android": {
+                "package": "com.kingsystem.interfaz"
+              }
+            }
+          }
+          APP_EOF
+
+          node -e '
+          const fs = require("fs");
+          let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          if (!pkg.version || pkg.version.trim() === "") pkg.version = "1.0.0";
+          pkg.dependencies = pkg.dependencies || {};
+          pkg.dependencies["expo"] = "~49.0.15";
+          pkg.dependencies["expo-status-bar"] = "~1.6.0";
+          pkg.dependencies["react"] = "18.2.0";
+          pkg.dependencies["react-native"] = "0.72.6";
+          pkg.dependencies["axios"] = "^1.6.2";
+          fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+          '
+
+      - name: 🌐 Asegurar Configuración API
+        run: |
+          mkdir -p src/api
+          if [ ! -f "src/api/endpoints.js" ]; then
+            cat << 'API_EOF' > src/api/endpoints.js
+            import axios from "axios";
+            const SERVER_URL = "https://api.kingsystem.com/v1";
+            export const apiClient = axios.create({
+              baseURL: SERVER_URL,
+              timeout: 10000,
+              headers: { "Content-Type": "application/json", "Accept": "application/json" }
+            });
+            export const endpoints = {
+              auth: { login: "/auth/login", register: "/auth/register" },
+              system: { sync: "/system/sync-nodes", status: "/system/status" }
+            };
+            API_EOF
+          fi
 
       - name: 📥 Instalar dependencias con YARN
         run: |
@@ -35,7 +87,7 @@ jobs:
         run: |
           npx expo prebuild --platform android --clean --non-interactive
 
-      - name: 🔨 Generar Bundle y Compilar APK con Gradle
+      - name: 🔨 Compilar APK con Todos los Recursos Incluidos
         run: |
           mkdir -p android/app/src/main/assets
           npx expo export:embed \
@@ -49,7 +101,7 @@ jobs:
           chmod +x gradlew
           ./gradlew clean assembleRelease
 
-      - name: 📤 Subir APK con Arquitectura Mapeada
+      - name: 📤 Subir APK Definitivo
         uses: actions/upload-artifact@v4
         with:
           name: King-System-Release-APK
