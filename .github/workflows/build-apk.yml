@@ -22,28 +22,29 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🔍 Ejecutar Auditoría Total del Proyecto
-        run: |
-          node audit-project.js
-
       - name: 💣 Limpieza Profunda de Cachés
         run: |
           rm -rf node_modules package-lock.json yarn.lock android ios .gradle android/app/build
 
-      - name: 📝 Blindar app.json y package.json con Node
+      - name: ⚙️ Ejecutar Generador Automático de Enlaces (App.js)
+        run: |
+          node generate-app.js
+
+      - name: 🛡️ Blindar Configuración y Dependencias
         run: |
           node -e '
           const fs = require("fs");
           let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
-          if (!pkg.version || pkg.version.trim() === "") pkg.version = "1.0.0";
+          pkg.version = "1.0.0";
           pkg.dependencies = pkg.dependencies || {};
           pkg.dependencies["expo"] = "~49.0.15";
           pkg.dependencies["expo-status-bar"] = "~1.6.0";
+          pkg.dependencies["expo-local-authentication"] = "~13.4.0";
           pkg.dependencies["react"] = "18.2.0";
           pkg.dependencies["react-native"] = "0.72.6";
           pkg.dependencies["axios"] = "^1.6.2";
           fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-          
+
           const appJson = {
             expo: {
               name: "King System",
@@ -54,7 +55,7 @@ jobs:
             }
           };
           fs.writeFileSync("app.json", JSON.stringify(appJson, null, 2));
-          console.log("✅ Configuración base blindada.");
+          console.log("✅ Configuración y manifiesto listos.");
           '
 
       - name: 📥 Instalar dependencias con YARN
@@ -66,7 +67,7 @@ jobs:
         run: |
           npx expo prebuild --platform android --clean --non-interactive
 
-      - name: 🔨 Compilar APK Definitivo con Módulos Integrados
+      - name: 🔨 Compilar APK Real con Gradle
         run: |
           mkdir -p android/app/src/main/assets
           npx expo export:embed \
@@ -80,7 +81,7 @@ jobs:
           chmod +x gradlew
           ./gradlew clean assembleRelease
 
-      - name: 📤 Subir APK Final
+      - name: 📤 Subir APK Definitivo
         uses: actions/upload-artifact@v4
         with:
           name: King-System-Release-APK

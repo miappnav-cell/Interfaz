@@ -1,131 +1,97 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, SafeAreaView, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { securityService } from './src/services/securityService';
+import { apiClient, endpoints } from './src/api/endpoints';
+
+// === IMPORTS AUTOMÁTICOS GENERADOS POR EL SISTEMA ===
+import ApiScreen0 from './src/screens/ApiSettings/ApiScreen.jsx';
+import ApiStatusBadge1 from './src/screens/ApiSettings/components/ApiStatusBadge.jsx';
+import LogoutHandler2 from './src/screens/Auth/LogoutHandler.jsx';
+import PrivacyScreen3 from './src/screens/Privacy/PrivacyScreen.jsx';
+import PrivacyToggleCard4 from './src/screens/Privacy/components/PrivacyToggleCard.jsx';
+import SecurityScreen5 from './src/screens/Security/SecurityScreen.jsx';
+import AuditLogsCard6 from './src/screens/Security/components/AuditLogsCard.jsx';
+import BiometricsCard7 from './src/screens/Security/components/BiometricsCard.jsx';
+import SettingsScreen8 from './src/screens/Settings/SettingsScreen.jsx';
+import CacheManagerCard9 from './src/screens/Settings/components/CacheManagerCard.jsx';
+import ThemeSelector10 from './src/screens/Settings/components/ThemeSelector.jsx';
+import UpdatesScreen11 from './src/screens/Updates/UpdatesScreen.jsx';
+import UpdateCard12 from './src/screens/Updates/components/UpdateCard.jsx';
+import UpdateStatusCard13 from './src/screens/Updates/components/UpdateStatusCard.jsx';
+import UsersScreen14 from './src/screens/UsersManager/UsersScreen.jsx';
+import BotControllerCard15 from './src/screens/UsersManager/components/BotControllerCard.jsx';
+import UserCard16 from './src/screens/UsersManager/components/UserCard.jsx';
+import UserFilterBar17 from './src/screens/UsersManager/components/UserFilterBar.jsx';
+import WalletScreen18 from './src/screens/Wallet/WalletScreen.jsx';
+import GatewayConfigCard19 from './src/screens/Wallet/components/GatewayConfigCard.jsx';
+import ReceiveMoneyCard20 from './src/screens/Wallet/components/ReceiveMoneyCard.jsx';
+import RechargeCard21 from './src/screens/Wallet/components/RechargeCard.jsx';
+
+
+const SCREENS = [
+  { id: 'ApiScreen0', label: 'ApiScreen', component: <ApiScreen0 /> },
+  { id: 'ApiStatusBadge1', label: 'ApiStatusBadge', component: <ApiStatusBadge1 /> },
+  { id: 'LogoutHandler2', label: 'LogoutHandler', component: <LogoutHandler2 /> },
+  { id: 'PrivacyScreen3', label: 'PrivacyScreen', component: <PrivacyScreen3 /> },
+  { id: 'PrivacyToggleCard4', label: 'PrivacyToggleCard', component: <PrivacyToggleCard4 /> },
+  { id: 'SecurityScreen5', label: 'SecurityScreen', component: <SecurityScreen5 /> },
+  { id: 'AuditLogsCard6', label: 'AuditLogsCard', component: <AuditLogsCard6 /> },
+  { id: 'BiometricsCard7', label: 'BiometricsCard', component: <BiometricsCard7 /> },
+  { id: 'SettingsScreen8', label: 'SettingsScreen', component: <SettingsScreen8 /> },
+  { id: 'CacheManagerCard9', label: 'CacheManagerCard', component: <CacheManagerCard9 /> },
+  { id: 'ThemeSelector10', label: 'ThemeSelector', component: <ThemeSelector10 /> },
+  { id: 'UpdatesScreen11', label: 'UpdatesScreen', component: <UpdatesScreen11 /> },
+  { id: 'UpdateCard12', label: 'UpdateCard', component: <UpdateCard12 /> },
+  { id: 'UpdateStatusCard13', label: 'UpdateStatusCard', component: <UpdateStatusCard13 /> },
+  { id: 'UsersScreen14', label: 'UsersScreen', component: <UsersScreen14 /> },
+  { id: 'BotControllerCard15', label: 'BotControllerCard', component: <BotControllerCard15 /> },
+  { id: 'UserCard16', label: 'UserCard', component: <UserCard16 /> },
+  { id: 'UserFilterBar17', label: 'UserFilterBar', component: <UserFilterBar17 /> },
+  { id: 'WalletScreen18', label: 'WalletScreen', component: <WalletScreen18 /> },
+  { id: 'GatewayConfigCard19', label: 'GatewayConfigCard', component: <GatewayConfigCard19 /> },
+  { id: 'ReceiveMoneyCard20', label: 'ReceiveMoneyCard', component: <ReceiveMoneyCard20 /> },
+  { id: 'RechargeCard21', label: 'RechargeCard', component: <RechargeCard21 /> }
+];
 
 export default function App() {
-  const [currentModule, setCurrentModule] = useState('dashboard');
-  const [logs, setLogs] = useState(['King System inicializado correctamente.']);
+  const [activeScreenIndex, setActiveScreenIndex] = useState(0);
 
-  const addLog = (msg) => {
-    setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev.slice(0, 4)]);
-  };
-
-  const executeAction = (actionName) => {
-    addLog(`Ejecutando: ${actionName}`);
-    Alert.alert('King System', `Acción [${actionName}] procesada con éxito.`);
-  };
+  const currentScreen = SCREENS[activeScreenIndex] || SCREENS[0];
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
       
-      {/* Cabecera */}
+      {/* Cabecera del King System */}
       <View style={styles.header}>
-        <Text style={styles.title}>👑 KING SYSTEM</Text>
-        <Text style={styles.subtitle}>Panel Maestro - 22 Módulos Detectados</Text>
-        <View style={styles.badge}>
-          <View style={styles.dot} />
-          <Text style={styles.badgeText}>Estado: Operativo</Text>
-        </View>
+        <Text style={styles.title}>👑 KING SYSTEM - CORE</Text>
+        <Text style={styles.subtitle}>Módulos Activos Enlazados: {SCREENS.length}</Text>
       </View>
 
-      {/* Navegación Modular */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.navScroll}>
-        {['dashboard', 'users', 'wallet', 'security', 'settings', 'updates', 'api'].map((mod) => (
-          <TouchableOpacity 
-            key={mod} 
-            style={[styles.navTab, currentModule === mod && styles.navTabActive]}
-            onPress={() => { setCurrentModule(mod); addLog(`Cambiando a módulo: ${mod}`); }}
-          >
-            <Text style={[styles.navTabText, currentModule === mod && styles.navTabTextActive]}>
-              {mod.toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Contenido Dinámico según el Módulo */}
-      <ScrollView contentContainerStyle={styles.content}>
-        {currentModule === 'dashboard' && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>⚡ Panel de Control General</Text>
-            <TouchableOpacity style={styles.card} onPress={() => executeAction('Sincronizar Nodos')}>
-              <Text style={styles.cardTitle}>🔄 Sincronizar Red de Nodos</Text>
-              <Text style={styles.cardDesc}>Actualiza el estado de la red en tiempo real.</Text>
+      {/* Selector Dinámico de Pantallas */}
+      <View style={styles.navContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.navScroll}>
+          {SCREENS.map((scr, idx) => (
+            <TouchableOpacity 
+              key={scr.id}
+              style={[styles.navTab, activeScreenIndex === idx && styles.navTabActive]}
+              onPress={() => setActiveScreenIndex(idx)}
+            >
+              <Text style={[styles.navText, activeScreenIndex === idx && styles.navTextActive]} numberOfLines={1}>
+                {scr.label}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.card} onPress={() => executeAction('Limpiar Caché')}>
-              <Text style={styles.cardTitle}>🧹 Limpieza de Memoria y Caché</Text>
-              <Text style={styles.cardDesc}>Optimiza el rendimiento operativo de la app.</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {currentModule === 'users' && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>👥 Gestión de Usuarios y Bots</Text>
-            <TouchableOpacity style={styles.card} onPress={() => executeAction('Reiniciar Bots Activos')}>
-              <Text style={styles.cardTitle}>🤖 BotControllerCard - Reiniciar Instancias</Text>
-              <Text style={styles.cardDesc}>Envía orden de reinicio a los bots del sistema.</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {currentModule === 'wallet' && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>💰 Billetera y Pasarelas</Text>
-            <TouchableOpacity style={styles.card} onPress={() => executeAction('Procesar Recarga')}>
-              <Text style={styles.cardTitle}>💳 RechargeCard - Gestión de Fondos</Text>
-              <Text style={styles.cardDesc}>Administra los fondos y pasarelas de pago.</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {currentModule === 'security' && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🔒 Seguridad y Auditoría</Text>
-            <TouchableOpacity style={styles.card} onPress={() => executeAction('Verificar Logs')}>
-              <Text style={styles.cardTitle}>🛡️ AuditLogsCard - Revisar Registros</Text>
-              <Text style={styles.cardDesc}>Monitorea las actividades recientes del sistema.</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {currentModule === 'settings' && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>⚙️ Ajustes del Sistema</Text>
-            <TouchableOpacity style={styles.card} onPress={() => executeAction('Cambiar Tema')}>
-              <Text style={styles.cardTitle}>🎨 ThemeSelector - Apariencia</Text>
-              <Text style={styles.cardDesc}>Configura los parámetros visuales de la interfaz.</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {currentModule === 'updates' && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🚀 Actualizaciones</Text>
-            <TouchableOpacity style={styles.card} onPress={() => executeAction('Buscar Updates')}>
-              <Text style={styles.cardTitle}>📦 UpdateCard - Versión del Sistema</Text>
-              <Text style={styles.cardDesc}>Comprueba la disponibilidad de nuevas versiones.</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {currentModule === 'api' && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🌐 Configuración de API</Text>
-            <TouchableOpacity style={styles.card} onPress={() => executeAction('Probar Endpoints')}>
-              <Text style={styles.cardTitle}>🔗 ApiStatusBadge - Estado de Conexión</Text>
-              <Text style={styles.cardDesc}>Valida la comunicación con los servidores remotos.</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Consola de Eventos */}
-        <View style={styles.console}>
-          <Text style={styles.consoleHeader}>💻 Consola de Actividad</Text>
-          {logs.map((l, i) => (
-            <Text key={i} style={styles.consoleText}>{l}</Text>
           ))}
+        </ScrollView>
+      </View>
+
+      {/* Renderizado de la Pantalla Activa */}
+      <ScrollView contentContainerStyle={styles.screenContainer}>
+        <View style={styles.wrapper}>
+          {currentScreen ? currentScreen.component : (
+            <Text style={styles.errorText}>Cargando módulo de sistema...</Text>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -133,25 +99,17 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#090d16' },
-  header: { padding: 18, backgroundColor: '#111827', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#1f2937' },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#38bdf8', letterSpacing: 1 },
-  subtitle: { fontSize: 12, color: '#9ca3af', marginTop: 4 },
-  badge: { flexDirection: 'row', alignItems: 'center', marginTop: 8, backgroundColor: '#1f2937', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#22c55e', marginRight: 6 },
-  badgeText: { color: '#22c55e', fontSize: 11, fontWeight: '600' },
-  navScroll: { maxHeight: 50, backgroundColor: '#111827', paddingHorizontal: 10, paddingVertical: 8 },
-  navTab: { paddingHorizontal: 14, paddingVertical: 6, backgroundColor: '#1f2937', borderRadius: 8, marginRight: 8, height: 32, justifyContent: 'center' },
+  container: { flex: 1, backgroundColor: '#020617' },
+  header: { padding: 14, backgroundColor: '#0f172a', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#1e293b' },
+  title: { fontSize: 18, fontWeight: 'bold', color: '#38bdf8', letterSpacing: 0.5 },
+  subtitle: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
+  navContainer: { backgroundColor: '#0f172a', borderBottomWidth: 1, borderBottomColor: '#1e293b' },
+  navScroll: { paddingHorizontal: 10, paddingVertical: 8 },
+  navTab: { paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#1e293b', borderRadius: 6, marginRight: 8, justifyContent: 'center' },
   navTabActive: { backgroundColor: '#0284c7' },
-  navTabText: { color: '#9ca3af', fontSize: 11, fontWeight: 'bold' },
-  navTabTextActive: { color: '#ffffff' },
-  content: { padding: 16 },
-  section: { marginBottom: 16 },
-  sectionTitle: { fontSize: 15, fontWeight: 'bold', color: '#f3f4f6', marginBottom: 10 },
-  card: { backgroundColor: '#111827', padding: 14, borderRadius: 10, marginBottom: 10, borderWidth: 1, borderColor: '#1f2937' },
-  cardTitle: { fontSize: 14, fontWeight: 'bold', color: '#38bdf8', marginBottom: 3 },
-  cardDesc: { fontSize: 11, color: '#9ca3af' },
-  console: { backgroundColor: '#030712', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: '#1f2937', marginTop: 10 },
-  consoleHeader: { color: '#4b5563', fontSize: 10, fontWeight: 'bold', marginBottom: 4 },
-  consoleText: { color: '#38bdf8', fontSize: 10, fontFamily: 'monospace', marginBottom: 2 }
+  navText: { color: '#94a3b8', fontSize: 11, fontWeight: '600' },
+  navTextActive: { color: '#ffffff' },
+  screenContainer: { padding: 16, flexGrow: 1 },
+  wrapper: { backgroundColor: '#0f172a', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#1e293b', minHeight: 400 },
+  errorText: { color: '#ef4444', textAlign: 'center', marginTop: 20 }
 });
