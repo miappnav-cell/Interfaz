@@ -22,7 +22,7 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 🔍 Ejecutar Auditoría Total (Pantallas, Nodos, Animaciones, Sonidos y APIs)
+      - name: 🔍 Ejecutar Auditoría Total del Proyecto
         run: |
           node audit-project.js
 
@@ -30,8 +30,25 @@ jobs:
         run: |
           rm -rf node_modules package-lock.json yarn.lock android ios .gradle android/app/build
 
-      - name: 📝 Blindar app.json y package.json
+      - name: 🛡️ Inyectar Lógica Maestra de Seguridad y Biometría
         run: |
+          # 1. Blindar package.json asegurando Expo, Axios y Autenticación Biométrica
+          node -e '
+          const fs = require("fs");
+          let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          if (!pkg.version || pkg.version.trim() === "") pkg.version = "1.0.0";
+          pkg.dependencies = pkg.dependencies || {};
+          pkg.dependencies["expo"] = "~49.0.15";
+          pkg.dependencies["expo-status-bar"] = "~1.6.0";
+          pkg.dependencies["expo-local-authentication"] = "~13.4.0";
+          pkg.dependencies["react"] = "18.2.0";
+          pkg.dependencies["react-native"] = "0.72.6";
+          pkg.dependencies["axios"] = "^1.6.2";
+          fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+          console.log("✅ Dependencias maestras inyectadas.");
+          '
+
+          # 2. Crear app.json obligatorio para Expo Prebuild
           cat << 'APP_EOF' > app.json
           {
             "expo": {
@@ -46,18 +63,48 @@ jobs:
           }
           APP_EOF
 
-          node -e '
-          const fs = require("fs");
-          let pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
-          if (!pkg.version || pkg.version.trim() === "") pkg.version = "1.0.0";
-          pkg.dependencies = pkg.dependencies || {};
-          pkg.dependencies["expo"] = "~49.0.15";
-          pkg.dependencies["expo-status-bar"] = "~1.6.0";
-          pkg.dependencies["react"] = "18.2.0";
-          pkg.dependencies["react-native"] = "0.72.6";
-          pkg.dependencies["axios"] = "^1.6.2";
-          fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
-          '
+          # 3. Crear Servicio de Seguridad Activo para el Servidor
+          mkdir -p src/services src/config
+          cat << 'SEC_EOF' > src/services/securityService.js
+          import axios from 'axios';
+          import * as LocalAuthentication from 'expo-local-authentication';
+
+          const SERVER_URL = "https://api.kingsystem.com/v1";
+
+          export const securityService = {
+            async authenticateAdmin() {
+              try {
+                const hasHardware = await LocalAuthentication.hasHardwareAsync();
+                if (!hasHardware) return { success: true, message: "Sin hardware biométrico, acceso libre." };
+                
+                const result = await LocalAuthentication.authenticateAsync({
+                  promptMessage: "King System - Autenticación de Administrador Maestro",
+                  fallbackLabel: "Usar PIN de seguridad",
+                });
+                return result;
+              } catch (error) {
+                console.error("Error biométrico:", error);
+                return { success: false, error: error.message };
+              }
+            },
+
+            async sendMasterCommand(action, payload) {
+              const auth = await this.authenticateAdmin();
+              if (!auth.success) {
+                throw new Error("Acceso denegado por seguridad biométrica.");
+              }
+
+              const response = await axios.post(`${SERVER_URL}/system/command`, {
+                action,
+                payload,
+                timestamp: new Date().toISOString(),
+                source: "King System Master App"
+              });
+              return response.data;
+            }
+          };
+          console.log("🛡️ securityService cargado y activo.");
+          SEC_EOF
 
       - name: 🌐 Asegurar Configuración API
         run: |
@@ -73,7 +120,7 @@ jobs:
             });
             export const endpoints = {
               auth: { login: "/auth/login", register: "/auth/register" },
-              system: { sync: "/system/sync-nodes", status: "/system/status" }
+              system: { sync: "/system/sync-nodes", status: "/system/status", command: "/system/command" }
             };
             API_EOF
           fi
@@ -87,7 +134,7 @@ jobs:
         run: |
           npx expo prebuild --platform android --clean --non-interactive
 
-      - name: 🔨 Compilar APK con Todos los Recursos Incluidos
+      - name: 🔨 Compilar APK Definitivo con Seguridad Integrada
         run: |
           mkdir -p android/app/src/main/assets
           npx expo export:embed \
@@ -101,7 +148,7 @@ jobs:
           chmod +x gradlew
           ./gradlew clean assembleRelease
 
-      - name: 📤 Subir APK Definitivo
+      - name: 📤 Subir APK con Seguridad y Módulos Activos
         uses: actions/upload-artifact@v4
         with:
           name: King-System-Release-APK
