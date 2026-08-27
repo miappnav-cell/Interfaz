@@ -26,11 +26,12 @@ jobs:
         run: |
           rm -rf node_modules package-lock.json yarn.lock android ios .gradle android/app/build
 
-      - name: ⚙️ Ejecutar Generador Automático de Enlaces (App.js)
+      - name: ⚡ Ejecutar Parche de Lógica Real y Generador
         run: |
+          node fix-logic.js
           node generate-app.js
 
-      - name: 🛡️ Blindar Configuración y Dependencias
+      - name: 🛡️ Blindar package.json y Dependencias
         run: |
           node -e '
           const fs = require("fs");
@@ -55,7 +56,6 @@ jobs:
             }
           };
           fs.writeFileSync("app.json", JSON.stringify(appJson, null, 2));
-          console.log("✅ Configuración y manifiesto listos.");
           '
 
       - name: 📥 Instalar dependencias con YARN
@@ -67,7 +67,7 @@ jobs:
         run: |
           npx expo prebuild --platform android --clean --non-interactive
 
-      - name: 🔨 Compilar APK Real con Gradle
+      - name: 🔨 Compilar APK con Lógica Funcional
         run: |
           mkdir -p android/app/src/main/assets
           npx expo export:embed \
